@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AnimeGrids | T7P Alpha Headers v4.9.6</title>
+    <title>AnimeGrids | T7P Stabilized v5.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&family=Poppins:ital,wght@1,900&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -15,101 +15,120 @@
         body { 
             background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; 
             display: flex; flex-direction: column; align-items: center; 
-            padding: 15px; margin: 0; transition: background 0.5s;
-            min-height: 100vh;
+            padding: 20px; margin: 0; transition: background 0.5s;
+            min-height: 100vh; overflow-x: hidden;
         }
-        header { text-align: center; margin-bottom: 25px; width: 100%; }
-        header h1 { font-family: 'Poppins', sans-serif; font-size: 2.5rem; font-style: italic; text-transform: uppercase; margin: 0; letter-spacing: -1px; }
+        header { text-align: center; margin-bottom: 20px; width: 100%; }
+        header h1 { font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-style: italic; text-transform: uppercase; margin: 0; letter-spacing: -1px; }
         
         .archive-trigger { 
             background: var(--card); border: 1px solid var(--accent); color: var(--accent); 
-            padding: 12px 24px; font-weight: 900; font-size: 0.8rem; text-transform: uppercase; 
+            padding: 8px 15px; font-weight: 900; font-size: 0.65rem; text-transform: uppercase; 
             cursor: pointer; margin-top: 10px; transition: 0.3s; border-radius: 4px;
         }
 
-        /* RECALIBRATED 580PX GRID */
         .grid {
             display: grid; 
-            grid-template-columns: 85px repeat(3, 1fr); /* Original label width */
-            grid-template-rows: 85px repeat(3, 1fr);    /* Original label height */
+            grid-template-columns: 125px repeat(3, 1fr); 
+            grid-template-rows: 85px repeat(3, 1fr);
             gap: 12px; background: var(--card); padding: 15px; 
             border: 1px solid var(--border); 
-            width: 100%; max-width: 580px; 
+            width: 95vw; max-width: 480px;
             aspect-ratio: 1/1;
         }
 
         .cell { 
             display: flex; align-items: center; justify-content: center; text-align: center; 
             font-weight: 900; text-transform: uppercase; 
-            position: relative;
-            word-wrap: break-word; line-height: 1.1;
+            position: relative; word-wrap: break-word; line-height: 1.1;
+            font-size: 0.65rem;
         }
 
-        /* RESTORED HEADER SIZING */
         .cat-header { 
-            background: rgba(255, 255, 255, 0.05); border: 1px solid #1a1a1a; padding: 8px; 
-            border-bottom: 4px solid var(--accent); cursor: help;
-            font-size: 0.75rem; /* Restored to original legible size */
+            background: rgba(255, 255, 255, 0.05); border: 1px solid #1a1a1a; padding: 6px; 
+            border-bottom: 3px solid var(--accent); cursor: help;
         }
 
         .tooltip {
-            visibility: hidden; position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
-            background: #111; color: var(--accent); padding: 14px; border: 1px solid var(--accent);
-            width: 200px; font-size: 0.75rem; font-weight: 700; z-index: 100; text-transform: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.9); pointer-events: none; opacity: 0; transition: 0.2s; line-height: 1.4;
+            visibility: hidden; position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%);
+            background: #111; color: var(--accent); padding: 10px; border: 1px solid var(--accent);
+            width: 150px; font-size: 0.6rem; font-weight: 700; z-index: 100; text-transform: none;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.9); pointer-events: none; opacity: 0; transition: 0.2s; line-height: 1.2;
         }
         .cat-header:hover .tooltip { visibility: visible; opacity: 1; }
 
-        .square { 
-            background: #080808; border: 1px solid var(--border); cursor: pointer; 
-            position: relative; background-size: cover; background-position: center; 
-            transition: 0.15s; overflow: hidden; 
-        }
+        .square { background: #080808; border: 1px solid var(--border); cursor: pointer; position: relative; background-size: cover; background-position: center; transition: 0.15s; overflow: hidden; }
         .square:hover { border-color: var(--accent); z-index: 5; }
 
+        /* SCROLLS & LABELS */
         .rarity-tag { 
-            position: absolute; top: 8px; right: 8px; font-size: 0.5rem; font-weight: 900; 
-            padding: 3px 10px; border-radius: 2px; text-transform: uppercase; z-index: 10;
-            box-shadow: 3px 3px 10px rgba(0,0,0,0.8);
+            position: absolute; top: 4px; right: 4px; font-size: 0.42rem; font-weight: 900; 
+            padding: 2px 6px; border-radius: 2px; text-transform: uppercase; z-index: 10;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.8);
             background-image: linear-gradient(90deg, #222 0%, #444 5%, rgba(0,0,0,0) 15%, rgba(0,0,0,0) 50%, rgba(0,0,0,0) 85%, #444 95%, #222 100%);
-            color: #000; border: 1.5px solid #000;
+            color: #000; border: 1px solid #000;
         }
         .char-label { 
             position: absolute; bottom: 0; width: 100%; 
-            background: linear-gradient(transparent, rgba(0,0,0,0.98) 45%); 
-            color: #fff; font-size: 0.65rem; padding: 10px 0 6px; font-weight: 900; 
+            background: linear-gradient(transparent, rgba(0,0,0,0.95) 40%); 
+            color: #fff; font-size: 0.52rem; padding: 6px 0 4px; font-weight: 900; 
             text-align: center; border-top: 1px solid rgba(255,255,255,0.1); 
         }
 
-        .target-brief {
-            background: #fefefe; color: var(--t7p-black); padding: 30px; margin-bottom: 25px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 8px; border-top: 8px solid var(--accent);
+        /* STABILIZED MODALS */
+        .modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.92); z-index: 2000; 
+            justify-content: center; align-items: flex-start; padding-top: 10vh; 
         }
-        .target-text { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 900; line-height: 1; text-transform: uppercase; }
-        .target-subtext { font-size: 0.85rem; font-weight: 700; color: #444; margin-top: 12px; text-transform: none; border-top: 1px solid #ddd; padding-top: 12px; width: 100%; text-align: left; }
+        .modal-box { 
+            width: 90%; max-width: 360px; background: #111; 
+            padding: 20px; border: 1px solid var(--border); 
+            text-align: center; border-radius: 10px; position: relative;
+        }
+        
+        .target-brief { background: #fefefe; color: var(--t7p-black); padding: 15px; margin-bottom: 15px; border-radius: 8px; border-top: 5px solid var(--accent); }
+        .target-text { font-size: 1.2rem; font-weight: 900; line-height: 1.1; text-transform: uppercase; font-family: 'Poppins', sans-serif;}
+        .target-subtext { font-size: 0.65rem; font-weight: 700; color: #555; margin-top: 8px; text-transform: none; border-top: 1px solid #ddd; padding-top: 8px; width: 100%; text-align: left; }
+        
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); color: #fff; font-weight: 700; outline: none; margin-bottom: 10px; box-sizing: border-box; border-radius: 4px; }
+        
+        /* HINT BUTTON REPAIR */
+        .hint-btn { 
+            width: 100%; padding: 8px; background: transparent; border: 1px solid var(--sharingan); 
+            color: var(--sharingan); font-weight: 900; cursor: pointer; 
+            font-size: 0.65rem; text-transform: uppercase; border-radius: 4px; margin-bottom: 10px;
+        }
+        .hint-btn:hover { background: rgba(255, 0, 0, 0.1); }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 2000; justify-content: center; align-items: flex-start; padding: 25px; box-sizing: border-box;}
-        .modal-box { width: 100%; max-width: 540px; background: #111; border: 1px solid var(--border); padding: 30px; text-align: center; max-height: 95vh; overflow-y: auto; border-radius: 12px; box-sizing: border-box; }
+        #sharingan-insight { margin-bottom: 10px; }
+        .choice-btn { 
+            background: #1a1a1a; border: 1px solid #333; color: #fff; 
+            width: 100%; padding: 10px; font-size: 0.75rem; font-weight: 700; 
+            cursor: pointer; text-align: left; margin-bottom: 5px; border-radius: 4px; 
+        }
         
-        input { width: 100%; padding: 20px; background: #000; border: 1px solid var(--border); color: #fff; font-weight: 700; outline: none; margin-bottom: 15px; box-sizing: border-box; border-radius: 8px; font-size: 1.2rem; }
-        .hint-btn { width: 100%; padding: 14px; background: transparent; border: 1px solid var(--sharingan); color: var(--sharingan); font-weight: 900; cursor: pointer; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 15px; border-radius: 6px; }
-        .choice-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 18px; font-size: 1rem; font-weight: 700; cursor: pointer; text-align: left; width: 100%; margin-bottom: 10px; border-radius: 8px; }
-        
-        #results { margin-top: 10px; max-height: 350px; overflow-y: auto; border: 1px solid var(--border); text-align: left; border-radius: 8px; }
-        .res-row { padding: 18px; border-bottom: 1px solid #222; cursor: pointer; color: #aaa; font-weight: 700; font-size: 1rem; display: flex; justify-content: space-between; }
-        .res-row:hover { background: #1a1a1a; color: var(--accent); }
+        #results { margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid var(--border); text-align: left; }
+        .res-row { 
+            padding: 10px; border-bottom: 1px solid #222; cursor: pointer; 
+            color: #aaa; font-size: 0.75rem; display: flex; justify-content: space-between; 
+        }
         .res-row.blacklisted { text-decoration: line-through; color: var(--wrong); opacity: 0.4; pointer-events: none; }
         
-        .btn-main { width: 100%; margin-top: 10px; padding: 20px; background: var(--accent); color: #000; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; border-radius: 8px; font-size: 1.1rem; }
-        .btn-secondary { width: 100%; margin-top: 10px; padding: 15px; background: #222; color: #fff; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; border-radius: 8px; }
+        .btn-main { width: 100%; margin-top: 10px; padding: 12px; background: var(--accent); color: #000; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; border-radius: 4px; }
+        .btn-secondary { width: 100%; margin-top: 10px; padding: 10px; background: #222; color: #fff; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; border-radius: 4px; }
+
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 15px; }
+        .cal-date { padding: 8px 0; font-size: 0.75rem; font-weight: 700; cursor: pointer; background: #080808; color: #fff; border: 1px solid transparent; }
+        .cal-date.active-date { background: var(--accent); color: #000; }
+        .cal-date.disabled { opacity: 0.1; cursor: default; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>AnimeGrids</h1>
-    <p id="season-display" style="color:var(--accent); letter-spacing: 2px; font-size: 0.8rem; text-transform: uppercase; font-weight: 900; margin-top: 5px;"></p>
+    <p id="season-display" style="color:var(--accent); letter-spacing: 2px; font-size: 0.7rem; text-transform: uppercase; font-weight: 900; margin-top: 5px;"></p>
     <button class="archive-trigger" onclick="openCalendar()">[ Archive Chronology ]</button>
 </header>
 
@@ -140,7 +159,7 @@
         </div>
         <input type="text" id="query" placeholder="SEARCH OPERATIVE..." oninput="search()">
         <button id="sharingan-trigger" class="hint-btn" onclick="useSharingan()">[Use Sharingan]</button>
-        <div id="sharingan-insight" style="display:none; margin-bottom:10px;"></div>
+        <div id="sharingan-insight" style="display:none;"></div>
         <div id="results"></div>
         <button class="btn-secondary" onclick="closeSearch()">Close HUD</button>
     </div>
@@ -148,22 +167,22 @@
 
 <div id="calendar-modal" class="modal">
     <div class="modal-box">
-        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:15px;">
-            <button onclick="changeMonth(-1)" style="background:none; border:none; color:white; cursor:pointer; font-weight:900; font-size:1.8rem;"> < </button>
-            <h3 id="cal-month-year" style="margin:0; font-size:1.2rem; font-style:italic; text-transform: uppercase;"></h3>
-            <button onclick="changeMonth(1)" style="background:none; border:none; color:white; cursor:pointer; font-weight:900; font-size:1.8rem;"> > </button>
+        <div style="display:flex; justify-content: space-between; align-items:center;">
+            <button onclick="changeMonth(-1)" style="background:none; border:none; color:white; cursor:pointer; font-weight:900;"> < </button>
+            <h3 id="cal-month-year" style="margin:0; font-size:0.9rem; font-style:italic; text-transform: uppercase;"></h3>
+            <button onclick="changeMonth(1)" style="background:none; border:none; color:white; cursor:pointer; font-weight:900;"> > </button>
         </div>
-        <div class="cal-grid" id="cal-grid-days" style="gap:12px;"></div>
-        <button class="btn-secondary" style="width:100%; margin-top:20px;" onclick="closeCalendar()">Abort Mission</button>
+        <div class="cal-grid" id="cal-grid-days"></div>
+        <button class="btn-secondary" style="width:100%; margin-top:20px;" onclick="closeCalendar()">Abort mission</button>
     </div>
 </div>
 
 <div id="report-modal" class="modal">
     <div class="modal-box">
         <h2 style="font-style:italic; margin:0;">MISSION REPORT</h2>
-        <p id="final-score" style="font-size:4.5rem; font-weight:900; color:var(--accent); margin:20px 0;"></p>
+        <p id="final-score" style="font-size:2.5rem; font-weight:900; color:var(--accent); margin:15px 0;"></p>
         <button class="btn-main" onclick="copyResults()">Copy Intel 📋</button>
-        <button class="btn-secondary" style="width:100%;" onclick="document.getElementById('report-modal').style.display='none'">Return</button>
+        <button class="btn-secondary" onclick="document.getElementById('report-modal').style.display='none'">Return</button>
     </div>
 </div>
 
@@ -286,20 +305,6 @@
         }
     }
 
-    function openSearch(r, c) { 
-        activeSq = {r, c}; const sqId = `sq-${r}-${c}`; if (!blacklistedNames[sqId]) blacklistedNames[sqId] = [];
-        const rName = rowCats[r], cName = colCats[c];
-        document.getElementById('target-title').innerText = `${rName} + ${cName}`;
-        const hideR = rName.toLowerCase().includes("hair"), hideC = cName.toLowerCase().includes("hair");
-        const rDef = hideR ? "Visual Identification Required." : (intelBriefs[rName.toLowerCase()] || "Mission Alpha.");
-        const cDef = hideC ? "Visual Identification Required." : (intelBriefs[cName.toLowerCase()] || "Mission Beta.");
-        document.getElementById('target-desc').innerHTML = `<b>${rName}:</b> ${rDef}<br><b>${cName}:</b> ${cDef}`;
-        document.getElementById('query').value = ""; document.getElementById('sharingan-insight').style.display = "none";
-        document.getElementById('sharingan-trigger').style.display = "block"; search();
-        document.getElementById('search-modal').style.display = 'flex'; document.getElementById('query').focus();
-    }
-
-    function closeSearch() { document.getElementById('search-modal').style.display = 'none'; }
     function openCalendar() { document.getElementById('calendar-modal').style.display = 'flex'; drawCal(); }
     function closeCalendar() { document.getElementById('calendar-modal').style.display = 'none'; }
     function changeMonth(dir) { displayMonth += dir; if(displayMonth<0){displayMonth=11;displayYear--;} if(displayMonth>11){displayMonth=0;displayYear++;} drawCal(); }
@@ -322,13 +327,32 @@
         }
     }
 
+    function openSearch(r, c) { 
+        activeSq = {r, c}; const sqId = `sq-${r}-${c}`; if (!blacklistedNames[sqId]) blacklistedNames[sqId] = [];
+        const rName = rowCats[r], cName = colCats[c];
+        document.getElementById('target-title').innerText = `${rName} + ${cName}`;
+        const hideR = rName.toLowerCase().includes("hair"), hideC = cName.toLowerCase().includes("hair");
+        const rDef = hideR ? "Visual Identification Required." : (intelBriefs[rName.toLowerCase()] || "Mission Alpha.");
+        const cDef = hideC ? "Visual Identification Required." : (intelBriefs[cName.toLowerCase()] || "Mission Beta.");
+        document.getElementById('target-desc').innerHTML = `<b>${rName}:</b> ${rDef}<br><b>${cName}:</b> ${cDef}`;
+        document.getElementById('query').value = ""; 
+        document.getElementById('sharingan-insight').style.display = "none";
+        document.getElementById('sharingan-trigger').style.display = "block"; 
+        search();
+        document.getElementById('search-modal').style.display = 'flex'; 
+        document.getElementById('query').focus();
+    }
+
+    function closeSearch() { document.getElementById('search-modal').style.display = 'none'; }
+
     function useSharingan() {
         const rCat = rowCats[activeSq.r], cCat = colCats[activeSq.c];
         const valid = db.filter(char => matches(char, rCat) && matches(char, cCat));
         const invalid = db.filter(char => !matches(char, rCat) || !matches(char, cCat));
         if (valid.length > 0 && invalid.length > 1) {
             const c = valid[Math.floor(Math.random()*valid.length)];
-            const w1 = invalid[Math.floor(Math.random()*invalid.length)], w2 = invalid[Math.floor(Math.random()*(invalid.length/2))];
+            const w1 = invalid[Math.floor(Math.random()*invalid.length)];
+            const w2 = invalid[Math.floor(Math.random()*(invalid.length/2))];
             let choices = [c, w1, w2].sort(() => Math.random() - 0.5);
             const div = document.getElementById('sharingan-insight');
             div.innerHTML = "<p style='font-size:0.6rem; color:#f00; font-weight:900;'>[ INSIGHT REVEALED ]</p>";
@@ -348,7 +372,7 @@
         filtered.forEach(char => {
             const isBlacklisted = blacklistedNames[sqId].includes(char.name);
             const d = document.createElement('div'); d.className = 'res-row' + (isBlacklisted ? ' blacklisted' : '');
-            d.innerHTML = `<span>${char.name}</span> <span style="font-size:0.65rem; opacity:0.5;">${char.series}</span>`;
+            d.innerHTML = `<span>${char.name}</span> <span style="font-size:0.5rem; opacity:0.5;">${char.series}</span>`;
             if (!isBlacklisted) d.onclick = () => selectChar(char); res.appendChild(d);
         });
     }
@@ -361,10 +385,7 @@
             if (missionHistory[idx] === 'empty') { missionHistory[idx] = 'correct'; correctCount++; }
             s.style.backgroundImage = char.image ? `url('${char.image}')` : 'none';
             if(!char.image) s.style.backgroundColor = "#222";
-            s.innerHTML = `
-                <div class="rarity-tag" style="background-color:${rarity.color}">${rarity.label}</div>
-                <div class="char-label">${char.name}</div>
-            `;
+            s.innerHTML = `<div class="rarity-tag" style="background-color:${rarity.color}">${rarity.label}</div><div class="char-label">${char.name}</div>`;
             closeSearch(); if (!missionHistory.includes('empty')) showReport();
         } else {
             if (!blacklistedNames[sqId].includes(char.name)) blacklistedNames[sqId].push(char.name);
