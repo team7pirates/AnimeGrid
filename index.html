@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPERATION: TEAM 7 CIPHER</title>
+    <style>
+        :root {
+            --bg: #050507;
+            --panel: #0f0f12;
+            --text: #e0e0e0;
+            --border: #1f1f26;
+            --search-bg: rgba(255, 255, 255, 0.98);
+            
+            /* Dynamic Variables - Changed by JS */
+            --accent: #9d4edd; 
+            --rank-a: #ff4d4d;
+            --rank-b: #ffb703;
+            --rank-c: #00ff88;
+            --host: #ff3366; 
+            --burn: #ff5500; 
+            --sharingan: #ff0033; 
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background 0.8s ease; }
+
+        #main-container { width: 100%; max-width: 1200px; padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .lobby-title { font-size: clamp(1.8rem, 8vw, 3.5rem); font-weight: 900; letter-spacing: 12px; margin-bottom: 3vh; text-transform: uppercase; text-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
+        
+        .host-tab { width: 100%; max-width: 850px; background: var(--panel); border: 2px solid var(--host); padding: 25px; margin-bottom: 25px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; border-radius: 4px; box-shadow: 0 0 15px rgba(255, 51, 102, 0.15); }
+        .host-tab:hover { background: #16161d; box-shadow: 0 0 30px rgba(255, 51, 102, 0.4); transform: scale(1.02); background-image: radial-gradient(circle at center, rgba(255,51,102,0.05) 0%, transparent 70%); }
+        .host-tab-title { color: var(--host); font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; letter-spacing: 6px; text-transform: uppercase; margin: 0;}
+        .host-tab-sub { color: #888; font-size: clamp(0.8rem, 2vw, 1rem); font-weight: bold; letter-spacing: 2px; margin-top: 5px; text-transform: uppercase;}
+
+        /* --- 1-10 DIFFICULTY GRID --- */
+        .diff-container { width: 100%; max-width: 850px; background: var(--panel); border: 2px solid var(--border); padding: 30px; border-radius: 4px; margin-bottom: 30px; }
+        .diff-header { color: #fff; letter-spacing: 5px; text-transform: uppercase; margin-top: 0; margin-bottom: 25px; font-size: 1.2rem; }
+        .diff-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; }
+        .diff-btn { background: #050507; border: 2px solid var(--c); color: var(--c); font-size: 1.5rem; font-weight: 900; padding: 15px 0; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .diff-btn:hover { background: var(--c); color: #000; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+        .sharingan-btn { width: 100%; margin-top: 20px; border: 2px solid var(--sharingan); color: var(--sharingan); background: #050507; padding: 15px; font-size: 1.2rem; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 4px; }
+        .sharingan-btn:hover { background: var(--sharingan); color: #fff; box-shadow: 0 0 20px rgba(255, 0, 51, 0.5); }
+
+        @media (max-width: 600px) {
+            .diff-grid { gap: 8px; }
+            .diff-btn { font-size: 1.2rem; padding: 10px 0; }
+        }
+
+        #game-theater, #leaderboard-overlay, #victory-overlay, #briefing-overlay, #loading-overlay, #sharingan-terminal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 500; backdrop-filter: blur(10px); }
+        .lb-content { width: 90%; max-width: 600px; background: var(--panel); border: 2px solid #fff; padding: 35px 25px; text-align: center; border-radius: 6px; box-shadow: 0 0 40px rgba(0,0,0,0.8); position: relative; }
+        
+        #hud { display: flex; justify-content: space-between; align-items: center; width: 95vw; max-width: 800px; margin-bottom: 15px; font-family: monospace; font-size: 1.2rem; font-weight: bold; padding: 0 10px; }
+        #timer-display { color: #fff; }
+        #score-display { color: var(--accent); }
+
+        .grid-frame { display: grid; grid-template-columns: 18% repeat(3, 26%); grid-template-rows: auto repeat(3, 1fr); gap: 1vw; width: 95vw; max-width: 800px; aspect-ratio: 1/1; z-index: 105; }
+        .node { background: rgba(0, 0, 0, 0.85); border: 1px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; overflow: hidden; }
+        .header-node { font-weight: 900; text-transform: uppercase; font-size: clamp(0.6rem, 2vw, 0.85rem); padding: 5px; line-height: 1.2; }
+        .play-node { cursor: pointer; transition: 0.2s; }
+        .play-node:hover { border-color: white; background: rgba(255,255,255,0.1); z-index: 110; }
+        
+        .cell-portrait { width: 100%; height: 100%; object-fit: cover; position: absolute; z-index: 1; filter: brightness(0.85); }
+        .filled-info { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,1) 40%); padding: 25px 5px 10px; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .filled-name { font-size: clamp(0.7rem, 2.5vw, 1rem); font-weight: 900; line-height: 1.1; margin-bottom: 4px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .filled-rank { font-size: clamp(0.5rem, 1.5vw, 0.65rem); opacity: 0.9; font-weight: bold; letter-spacing: 1px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+
+        #search-terminal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 600; backdrop-filter: blur(10px); }
+        .terminal-box { width: 90%; max-width: 500px; background: var(--panel); border: 2px solid #fff; padding: 25px; border-radius: 8px; text-align: center; position: relative; }
+        
+        #search-input { width: 100%; padding: 14px; border-radius: 4px; border: 1px solid #444; background: #000; color: #fff; font-size: 1.2rem; text-align: center; outline: none; margin-top: 10px; font-weight: bold; }
+        #results-list { max-height: 200px; overflow-y: auto; margin-top: 15px; background: #14141a; border-radius: 4px; border: 1px solid #222; }
+        .result-item { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid #1f1f26; cursor: pointer; text-align: left; }
+        .result-item:hover { background: #1d1d2b; }
+        .result-thumb { width: 45px; height: 45px; border-radius: 50%; margin-right: 15px; border: 2px solid #333; object-fit: cover; flex-shrink: 0; }
+        .result-meta { display: flex; flex-direction: column; justify-content: center; }
+        
+        #strike-container { margin-top: 15px; margin-bottom: 5px; font-size: 0.85rem; color: #ff4d4d; font-weight: bold; }
+        .strike-name { text-decoration: line-through; margin-right: 12px; opacity: 0.7; }
+
+        .lb-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px solid #222; font-family: monospace; font-size: 1rem; text-align: left;}
+        .lb-header { font-weight: bold; color: var(--accent); border-bottom: 2px solid var(--accent); font-size: 0.9rem; letter-spacing: 2px; }
+        .victory-title { font-size: clamp(2rem, 6vw, 3.5rem); color: #00ff88; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 15px; margin-top: 0; text-shadow: 0 0 20px rgba(0,255,136,0.4); }
+        .victory-stat { font-size: 1.5rem; margin: 15px 0; font-family: monospace; font-weight: bold; }
+        
+        #player-name { width: 80%; padding: 15px; margin-top: 20px; font-size: 1.2rem; text-align: center; background: #000; border: 2px solid #00ff88; color: #fff; outline: none; text-transform: uppercase; position: relative; z-index: 9999; pointer-events: auto; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); border-radius: 4px; }
+        #player-name:focus { border-color: #fff; box-shadow: 0 0 25px rgba(255, 255, 255, 0.5); }
+
+        .btn { padding: 16px 32px; margin-top: 25px; cursor: pointer; font-weight: 900; text-transform: uppercase; border: 1px solid #444; background: #000; color: #fff; border-radius: 4px; letter-spacing: 2px; transition: 0.2s; position: relative; z-index: 9999; }
+        .btn:hover { background: #fff; color: #000; border-color: #fff; transform: scale(1.05); }
+        
+        .btn-transmit { border-color: #00ff88; color: #00ff88; }
+        .btn-transmit:hover { background: #00ff88; color: #000; }
+        .btn-share { border-color: var(--host); color: var(--host); }
+        .btn-share:hover { background: var(--host); color: #000; }
+        .btn-burn { border-color: var(--burn); color: var(--burn); }
+        .btn-burn:hover { background: var(--burn); color: #000; border-color: var(--burn); }
+
+        /* --- BRIEFING SCROLL & STYLES --- */
+        .briefing-text { 
+            text-align: left; 
+            font-size: 1.1rem; 
+            line-height: 1.6; 
+            margin-bottom: 20px; 
+            color: #ccc; 
+            max-height: 55vh; 
+            overflow-y: auto; 
+            padding-right: 15px; 
+        }
+        .briefing-text::-webkit-scrollbar { width: 6px; }
+        .briefing-text::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        
+        .briefing-text strong { color: #fff; }
+        .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; font-weight: bold; background: #050507; padding: 15px; border-radius: 6px; border: 1px solid #333;}
+        .info-box { text-align: left; background: #0a0a0f; padding: 15px; border-radius: 6px; border: 1px solid #333; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<audio id="lobby-music" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
+</audio>
+
+<div id="loading-overlay" style="z-index: 999999;">
+    <h2 style="color:var(--accent); letter-spacing: 5px; animation: pulse 1s infinite; font-size: 1.5rem; text-align:center; padding: 20px;">CALCULATING<br>TACTICAL PARAMETERS...</h2>
+</div>
+
+<div id="briefing-overlay" onclick="startAudioAndCloseBriefing()" style="display:flex; z-index: 99999; cursor: pointer;">
+    <div class="lb-content" id="brief-box" style="border-color: var(--accent); padding: 30px;">
+        <h1 id="brief-title" style="color:var(--accent); letter-spacing: 5px; margin-top: 0; font-size: 2rem; text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);">TACTICAL BRIEFING</h1>
+        
+        <div class="briefing-text">
+            <p style="margin-top: 0;"><strong>OBJECTIVE:</strong> Decode the 3x3 grid by identifying operatives that match BOTH the intersecting Row and Column criteria.</p>
+            
+            <p><strong>SCORING SYSTEM:</strong> Points are awarded based on operative rarity.</p>
+            <div class="score-grid">
+                <div><span id="brief-s" style="color:var(--accent)">SANNIN:</span> 100 PTS</div>
+                <div><span id="brief-a" style="color:var(--rank-a)">KAGE:</span> 80 PTS</div>
+                <div><span id="brief-b" style="color:var(--rank-b)">ANBU:</span> 60 PTS</div>
+                <div><span id="brief-c" style="color:var(--rank-c)">JONIN:</span> 40 PTS</div>
+                <div><span style="color:#00d4ff">CHUNIN:</span> 20 PTS</div>
+                <div><span style="color:#aaa">GENIN:</span> 10 PTS</div>
+            </div>
+
+            <div class="info-box">
+                <p style="margin-top: 0; color: #fff;"><strong>⚙️ DIFFICULTY SCALING (1-10)</strong></p>
+                <ul style="margin-bottom: 0; padding-left: 20px; font-size: 0.95rem; color: #bbb;">
+                    <li><strong>Levels 1-3:</strong> High flexibility. 3+ possible correct operatives per square.</li>
+                    <li><strong>Levels 4-8:</strong> Moderate to strict parameters.</li>
+                    <li><strong>Levels 9-10 (Extreme):</strong> Brutal. Only 1 or 2 specific valid operatives exist for each square in the entire database.</li>
+                </ul>
+            </div>
+
+            <div class="info-box" style="border-color: var(--sharingan);">
+                <p style="margin-top: 0; color: var(--sharingan);"><strong>👁️ SHARINGAN TRAINING MODE</strong></p>
+                <p style="margin-bottom: 0; font-size: 0.95rem; color: #bbb;">A low-stakes practice environment. Selecting a square gives you 6 multiple-choice options (with guaranteed correct answers mixed with decoys). <br><em style="color:#888;">Note: Scores are not recorded on the Global Rankings.</em></p>
+            </div>
+
+            <p style="color: var(--burn); font-weight: bold; font-size: 0.9rem;">🔥 BURN PROTOCOL: You may bypass any stubborn square for a -15 POINT penalty.</p>
+            <p style="color: #ff4d4d; font-weight: bold; font-size: 0.9rem; margin-bottom: 0;">❌ WARNING: Every incorrect guess (Strike) results in a -5 POINT penalty.</p>
+        </div>
+        
+        <button class="btn" id="brief-btn" style="width:100%; border-color: var(--accent); color: var(--accent); pointer-events: none; margin-top: 10px;">[ Tap Anywhere to Begin ]</button>
+    </div>
+</div>
+
+<div id="main-container">
+    <div id="hq-lobby">
+        <h1 class="lobby-title">TEAM 7 CIPHER</h1>
+        
+        <div class="host-tab" onclick="launchHostChallenge()">
+            <h2 class="host-tab-title">HOST CHALLENGE</h2>
+            <div class="host-tab-sub" id="host-sub">RETRIEVING PODCAST INTEL...</div>
+        </div>
+
+        <div class="diff-container">
+            <h3 class="diff-header">AUTO-GENERATE MISSION</h3>
+            <div class="diff-grid">
+                <div class="diff-btn" style="--c: var(--rank-c)" onclick="autoGenerate(1)">1</div>
+                <div class="diff-btn" style="--c: var(--rank-c)" onclick="autoGenerate(2)">2</div>
+                <div class="diff-btn" style="--c: var(--rank-c)" onclick="autoGenerate(3)">3</div>
+                <div class="diff-btn" style="--c: var(--rank-b)" onclick="autoGenerate(4)">4</div>
+                <div class="diff-btn" style="--c: var(--rank-b)" onclick="autoGenerate(5)">5</div>
+                <div class="diff-btn" style="--c: var(--rank-b)" onclick="autoGenerate(6)">6</div>
+                <div class="diff-btn" style="--c: var(--rank-a)" onclick="autoGenerate(7)">7</div>
+                <div class="diff-btn" style="--c: var(--rank-a)" onclick="autoGenerate(8)">8</div>
+                <div class="diff-btn" style="--c: var(--rank-a)" onclick="autoGenerate(9)">9</div>
+                <div class="diff-btn" style="--c: var(--accent)" onclick="autoGenerate(10)">10</div>
+            </div>
+            <button class="sharingan-btn" onclick="launchSharingan()">👁️ Sharingan Training Mode</button>
+        </div>
+
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn" onclick="showLeaderboard()">Global Rankings</button>
+            <button class="btn" onclick="document.getElementById('briefing-overlay').style.display='flex'" style="border-color:#555; color:#aaa;">Rules & Intel</button>
+        </div>
+    </div>
+</div>
+
+<div id="leaderboard-overlay">
+    <div class="lb-content">
+        <h2 style="color:#fff; letter-spacing: 4px; margin-top:0;">GLOBAL RANKINGS</h2>
+        <div id="lb-status" style="font-size: 0.7rem; color: #00ff88; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Retrieving Server Data...</div>
+        <div class="lb-row lb-header"><span style="flex:2">CODENAME</span><span style="flex:2">MISSION</span><span style="flex:1; text-align:center;">SCORE</span><span style="flex:1; text-align:right;">TIME</span></div>
+        <div id="lb-data"></div>
+        <button class="btn" onclick="closeOverlay('leaderboard-overlay')" style="width:100%">Return to HQ</button>
+    </div>
+</div>
+
+<div id="victory-overlay">
+    <div class="lb-content" style="border-color: #00ff88;">
+        <h1 class="victory-title">MISSION CLEAR</h1>
+        <div class="victory-stat">Time: <span id="v-time" style="color:#fff"></span></div>
+        <div class="victory-stat">Score: <span id="v-score" style="color:var(--accent)"></span></div>
+        
+        <input type="text" id="player-name" placeholder="ENTER CODENAME..." maxlength="12">
+        <div id="sync-status" style="font-size: 0.8rem; color: #888; margin-top: 15px; font-style: italic;">Awaiting Transmission...</div>
+        
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-transmit" onclick="transmitScore()" id="transmit-btn">Transmit Score</button>
+            <button class="btn btn-share" onclick="shareIntel()" id="share-btn">Copy Intel</button>
+            <button class="btn" onclick="abortMission()">Exit</button>
+        </div>
+    </div>
+</div>
+
+<div id="game-theater" style="z-index: 100;">
+    <h2 id="op-title" style="margin-bottom:10px; margin-top:0; letter-spacing:5px; text-shadow: 0 2px 5px #000;">MISSION</h2>
+    <div id="hud">
+        <div id="timer-display">TIME: 00:00</div>
+        <div id="score-display">SCORE: 0</div>
+    </div>
+    <div class="grid-frame" id="main-grid"></div>
+    <button class="btn" onclick="abortMission()" style="width:250px;">Abort Mission</button>
+</div>
+
+<div id="search-terminal">
+    <div class="terminal-box" id="search-box">
+        <div id="terminal-target" style="font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 2px; font-weight:bold;">IDENTIFYING...</div>
+        <input type="text" id="search-input" placeholder="SEARCH ROSTER" autocomplete="off">
+        <div id="results-list"></div>
+        <div id="strike-container"></div>
+        
+        <div style="display: flex; gap: 10px; width: 100%; margin-top: 15px;">
+            <button class="btn btn-burn" onclick="executeBurn()" style="flex: 1; margin-top: 0;">Burn (-15 Pts)</button>
+            <button class="btn" onclick="closeSearch()" style="flex: 1; margin-top: 0; background: transparent; border-color: #333; color: #777;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="sharingan-terminal" style="z-index: 600;">
+    <div class="terminal-box" id="sharingan-box" style="width: 800px; max-width: 95%; background: #0a0a0f; border-color: var(--sharingan);">
+        <div style="color: var(--sharingan); font-size: 2rem; margin-bottom: 5px; text-shadow: 0 0 15px rgba(255,0,51,0.5);">👁️</div>
+        <div id="sharingan-target" style="font-size: 0.9rem; color: #ccc; text-transform: uppercase; letter-spacing: 3px; font-weight:bold; margin-bottom: 20px;">SHARINGAN ACTIVATED: <span id="s-coords" style="color:var(--sharingan)"></span></div>
+        
+        <div id="sharingan-options" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px;"></div>
+        
+        <button class="btn" onclick="closeSharingan()" style="width: 100%; margin-top: 10px; background: transparent; border-color: #333; color: #777;">Deactivate Sharingan</button>
+    </div>
+</div>
+
+<script>
+    // --- WEEKLY COLOR ROTATION ENGINE ---
+    const originalColors = { s: '#9d4edd', a: '#ff4d4d', b: '#ffb703', c: '#00ff88' };
+    const pictureColors = { s: '#8300C7', a: '#01A50A', b: '#3657B2', c: '#F0C075' }; 
+
+    const weekNum = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
+    const isAlternateWeek = weekNum % 2 !== 0; 
+    const currentPalette = isAlternateWeek ? pictureColors : originalColors;
+
+    document.documentElement.style.setProperty('--accent', currentPalette.s);
+    document.documentElement.style.setProperty('--rank-a', currentPalette.a);
+    document.documentElement.style.setProperty('--rank-b', currentPalette.b);
+    document.documentElement.style.setProperty('--rank-c', currentPalette.c);
+
+    document.getElementById('brief-box').style.borderColor = currentPalette.s;
+    document.getElementById('brief-title').style.color = currentPalette.s;
+    document.getElementById('brief-btn').style.borderColor = currentPalette.s;
+    document.getElementById('brief-btn').style.color = currentPalette.s;
+    document.getElementById('brief-s').style.color = currentPalette.s;
+    document.getElementById('brief-a').style.color = currentPalette.a;
+    document.getElementById('brief-b').style.color = currentPalette.b;
+    document.getElementById('brief-c').style.color = currentPalette.c;
+
+    // --- SYSTEM DATA ---
+    const MISSIONS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk_vcJX4UPnF1i_cnH0BIYX7AXm3u8EwpCE8X5m_SUd8kf4kjhex39JH1kIkrf0uGg_-7UrTU8e4Xx/pub?gid=0&single=true&output=csv";
+    const ROSTER_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk_vcJX4UPnF1i_cnH0BIYX7AXm3u8EwpCE8X5m_SUd8kf4kjhex39JH1kIkrf0uGg_-7UrTU8e4Xx/pub?gid=455569491&single=true&output=csv";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxniqnBjSqfX1wg_HWFibMXLWqJr1YwH2WaIQkEoJRSaJdY7r2WHczDkBoCgY55fwxEUQ/exec";
+
+    let mDB = [], rDB = [], active = null, hostChallengeData = null;
+    let currentMissionName = "", filledCount = 0, currentScore = 0, startTime = 0, timerInterval = null, finalTimeString = "";
+    
+    let missionGridEmojis = [];
+    let isSharinganMode = false;
+
+    function startAudioAndCloseBriefing() {
+        closeOverlay('briefing-overlay');
+        let lobbyMusic = document.getElementById('lobby-music');
+        lobbyMusic.volume = 0.3;
+        lobbyMusic.play().catch(e => console.log("Browser prevented audio autoplay."));
+    }
+
+    function parseCSV(s){const a=[];let q=false;for(let r=l=c=0;c<s.length;c++){let cc=s[c],nc=s[c+1];a[r]=a[r]||[];a[r][l]=a[r][l]||'';if(cc=='"'&&q&&nc=='"'){a[r][l]+=cc;++c;continue}if(cc=='"'){q=!q;continue}if(cc==','&&!q){++l;continue}if((cc=='\n'||cc=='\r')&&!q){if(cc=='\r'&&nc=='\n')++c;++r;l=0;continue}a[r][l]+=cc}return a}
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    async function init(){
+        const r1=await fetch(MISSIONS_URL); const t1=await r1.text(); const d1=parseCSV(t1);
+        const h1=d1[0].map(h=>h.trim().toLowerCase());
+        mDB=d1.slice(1).map(row=>h1.reduce((o,h,i)=>{o[h]=row[i]?row[i].trim():"";return o},{}));
+        
+        const r2=await fetch(ROSTER_URL); const t2=await r2.text(); const d2=parseCSV(t2);
+        const h2=d2[0].map(h=>h.trim().toLowerCase());
+        rDB=d2.slice(1).map(row=>h2.reduce((o,h,i)=>{o[h]=row[i]?row[i].trim():"";return o},{}));
+
+        if(mDB.length > 0) {
+            const hostMissions = mDB.filter(m => (m["mission title"] || "").toLowerCase().includes("host") || (m["rank"] || "").toLowerCase().includes("host"));
+            hostChallengeData = hostMissions.length > 0 ? hostMissions[hostMissions.length - 1] : mDB[mDB.length - 1];
+            document.getElementById('host-sub').innerText = hostChallengeData["mission title"] || "Classified Operation";
+        }
+    }
+
+    function getImg(c){
+        let u = c["image url"] || c["url"] || "";
+        if(!u) return "";
+        if(u.includes("drive.google.com")){
+            const id = u.split("id=")[1] || u.split("/d/")[1].split("/")[0];
+            return `https://lh3.googleusercontent.com/d/${id}`;
+        }
+        return u;
+    }
+
+    function launchSharingan() {
+        isSharinganMode = true;
+        autoGenerate(2, true); 
+    }
+
+    function autoGenerate(level, sharingan = false) {
+        isSharinganMode = sharingan;
+        document.getElementById('loading-overlay').style.display = 'flex';
+        
+        setTimeout(() => {
+            let allSeries = [...new Set(rDB.map(c => c["series"]).filter(s => s))];
+            let allTags = [];
+            rDB.forEach(c => {
+                if(c["tags"]) {
+                    c["tags"].split(',').forEach(t => {
+                        let trimmed = t.trim();
+                        if(trimmed) allTags.push(trimmed);
+                    });
+                }
+            });
+            allTags = [...new Set(allTags)];
+            
+            let minValid = 1, maxValid = 999;
+            
+            if (level <= 3) { minValid = 3; maxValid = 999; } 
+            else if (level <= 6) { minValid = 2; maxValid = 15; } 
+            else if (level <= 8) { minValid = 1; maxValid = 6; } 
+            else if (level === 9) { minValid = 1; maxValid = 4; } 
+            else { minValid = 1; maxValid = 2; } 
+            
+            let grid = null;
+            
+            for(let attempts = 0; attempts < 2500; attempts++) {
+                let rRows = shuffle([...allSeries]).slice(0, 3);
+                let rCols = shuffle([...allTags]).slice(0, 3);
+                
+                let valid = true;
+                for(let r of rRows) {
+                    for(let c of rCols) {
+                        let matches = rDB.filter(char => {
+                            let cSeries = (char["series"]||"").toLowerCase();
+                            let cTags = (char["tags"]||"").toLowerCase();
+                            return (cSeries === r.toLowerCase() || cTags.includes(r.toLowerCase())) &&
+                                   (cSeries === c.toLowerCase() || cTags.includes(c.toLowerCase()));
+                        });
+                        if(matches.length < minValid || matches.length > maxValid) {
+                            valid = false; break;
+                        }
+                    }
+                    if(!valid) break;
+                }
+                if(valid) { grid = { rows: rRows, cols: rCols }; break; }
+            }
+            
+            if(!grid) {
+                for(let attempts = 0; attempts < 2500; attempts++) {
+                    let rRows = shuffle([...allSeries]).slice(0, 3);
+                    let rCols = shuffle([...allTags]).slice(0, 3);
+                    let valid = true;
+                    for(let r of rRows) {
+                        for(let c of rCols) {
+                            let matches = rDB.filter(char => {
+                                let cSeries = (char["series"]||"").toLowerCase();
+                                let cTags = (char["tags"]||"").toLowerCase();
+                                return (cSeries === r.toLowerCase() || cTags.includes(r.toLowerCase())) &&
+                                       (cSeries === c.toLowerCase() || cTags.includes(c.toLowerCase()));
+                            });
+                            if(matches.length < 1) { valid = false; break; }
+                        }
+                        if(!valid) break;
+                    }
+                    if(valid) { grid = { rows: rRows, cols: rCols }; break; }
+                }
+            }
+            
+            document.getElementById('loading-overlay').style.display = 'none';
+            
+            if(!grid) {
+                alert("Database too small to generate this difficulty. Add more operatives.");
+                return;
+            }
+            
+            const colorMap = {1:'--rank-c', 2:'--rank-c', 3:'--rank-c', 4:'--rank-b', 5:'--rank-b', 6:'--rank-b', 7:'--rank-a', 8:'--rank-a', 9:'--rank-a', 10:'--accent'};
+            const varName = colorMap[level];
+            const activeColor = sharingan ? 'var(--sharingan)' : getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+            
+            let autoMission = {
+                "mission title": sharingan ? `[TRAINING] SHARINGAN MODE` : `LEVEL ${level} OPERATION`,
+                "r1": grid.rows[0], "r2": grid.rows[1], "r3": grid.rows[2],
+                "c1": grid.cols[0], "c2": grid.cols[1], "c3": grid.cols[2]
+            };
+            
+            launch(autoMission, sharingan ? '#ff0033' : activeColor);
+        }, 50);
+    }
+
+    function launchHostChallenge() {
+        if(!hostChallengeData) return;
+        isSharinganMode = false;
+        const color = '#ff3366'; 
+        currentMissionName = "[HOST] " + (hostChallengeData["mission title"] || "Classified");
+        
+        document.getElementById('op-title').innerText = "HOST CHALLENGE";
+        launch(hostChallengeData, color, true);
+    }
+
+    function launch(m, color, isHost = false){
+        document.getElementById('hq-lobby').style.display = 'none';
+        document.body.style.backgroundColor = color;
+        const th = document.getElementById('game-theater'); th.style.display = 'flex';
+        th.style.background = `radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%)`;
+        
+        if(!isHost) {
+            currentMissionName = m["mission title"] || "Op: Classified";
+            document.getElementById('op-title').innerText = currentMissionName;
+        }
+        
+        document.getElementById('op-title').style.color = '#fff';
+        document.getElementById('score-display').style.color = color;
+        
+        startMissionTimer();
+        renderGrid(m, color);
+    }
+
+    function renderGrid(m, color){
+        const g = document.getElementById('main-grid'); g.innerHTML = "";
+        const rL = [m["r1"], m["r2"], m["r3"]], cL = [m["c1"], m["c2"], m["c3"]];
+        g.appendChild(document.createElement('div'));
+        cL.forEach(c => { const d = document.createElement('div'); d.className = 'node header-node'; d.style.color = color; d.innerText = c; g.appendChild(d); });
+        
+        rL.forEach((r, rIdx) => {
+            const d = document.createElement('div'); d.className = 'node header-node'; d.style.color = color; d.innerText = r; g.appendChild(d);
+            for(let i=0; i<3; i++) {
+                const cell = document.createElement('div'); cell.className = 'node play-node';
+                let cellIndex = (rIdx * 3) + i; 
+                cell.onclick = () => { 
+                    if(!cell.classList.contains('locked')) {
+                        if(isSharinganMode) {
+                            openSharinganSearch(cell, r, cL[i], color, cellIndex);
+                        } else {
+                            openSearch(cell, r, cL[i], color, cellIndex); 
+                        }
+                    }
+                }; 
+                g.appendChild(cell);
+            }
+        });
+    }
+
+    function openSharinganSearch(cell, row, col, color, cellIndex) {
+        active = { cell: cell, row: row, col: col, color: color, index: cellIndex };
+        document.getElementById('s-coords').innerText = `${row.toUpperCase()} x ${col.toUpperCase()}`;
+        
+        let valids = rDB.filter(char => {
+            let cSeries = (char["series"]||"").toLowerCase();
+            let cTags = (char["tags"]||"").toLowerCase();
+            return (cSeries === row.toLowerCase() || cTags.includes(row.toLowerCase())) &&
+                   (cSeries === col.toLowerCase() || cTags.includes(col.toLowerCase()));
+        });
+
+        let invalids = rDB.filter(char => !valids.includes(char));
+
+        valids = shuffle(valids);
+        invalids = shuffle(invalids);
+
+        let numValids = Math.min(3, Math.max(2, valids.length)); 
+        let options = valids.slice(0, numValids).concat(invalids.slice(0, 6 - numValids));
+        
+        options = shuffle(options);
+
+        const container = document.getElementById('sharingan-options');
+        container.innerHTML = "";
+
+        options.forEach(char => {
+            const item = document.createElement('div');
+            item.style.cssText = `background: #14141a; border: 2px solid #222; padding: 15px; cursor: pointer; border-radius: 6px; display: flex; flex-direction: column; align-items: center; transition: 0.2s;`;
+            item.onmouseover = () => { item.style.borderColor = color; item.style.transform = 'scale(1.05)'; item.style.boxShadow = `0 0 15px ${color}66`; };
+            item.onmouseout = () => { item.style.borderColor = '#222'; item.style.transform = 'scale(1)'; item.style.boxShadow = 'none'; };
+            item.onclick = () => { selectSharinganOption(char); };
+
+            let imgUrl = getImg(char) || "https://via.placeholder.com/80/000000/FFFFFF?text=?";
+            
+            item.innerHTML = `
+                <img src="${imgUrl}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 2px solid #000; box-shadow: 0 0 10px rgba(0,0,0,0.8);">
+                <span style="font-weight: 900; color: #fff; font-size: 1rem; text-align: center; margin-bottom: 5px;">${char["operative"]}</span>
+                <span style="color: ${color}; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; text-align: center;">${char["series"] || "CLASSIFIED"}</span>
+            `;
+            container.appendChild(item);
+        });
+
+        document.getElementById('sharingan-terminal').style.display = 'flex';
+    }
+
+    function selectSharinganOption(char) {
+        document.getElementById('sharingan-terminal').style.display = 'none';
+        validate(char); 
+    }
+
+    function closeSharingan() { document.getElementById('sharingan-terminal').style.display = 'none'; }
+
+    function openSearch(cell, row, col, color, cellIndex){
+        active = { cell: cell, row: row, col: col, color: color, index: cellIndex };
+        document.getElementById('terminal-target').innerText = `${row.toUpperCase()} x ${col.toUpperCase()}`;
+        document.getElementById('search-box').style.borderColor = color;
+        document.getElementById('search-input').value = ""; document.getElementById('results-list').innerHTML = "";
+        document.getElementById('strike-container').innerHTML = "";
+        document.getElementById('search-terminal').style.display = 'flex';
+        document.getElementById('search-input').focus();
+    }
+
+    document.getElementById('search-input').oninput = function(){
+        const v = this.value.toLowerCase(); const res = document.getElementById('results-list'); res.innerHTML = "";
+        if(v.length < 1) return;
+        rDB.filter(c => c["operative"] && c["operative"].toLowerCase().includes(v)).forEach(char => {
+            const item = document.createElement('div'); item.className = 'result-item';
+            item.innerHTML = `
+                <img src="${getImg(char)}" class="result-thumb">
+                <div class="result-meta">
+                    <span style="font-weight:900; color:#fff; font-size:1.1rem;">${char["operative"]}</span>
+                    <span style="color:${active.color}; font-size:0.75rem; font-weight:bold; text-transform:uppercase;">${char["series"] || ""}</span>
+                </div>`;
+            item.onclick = () => validate(char); res.appendChild(item);
+        });
+    };
+
+    function validate(c){
+        const intel = (c["operative"] + " " + (c["series"]||"") + " " + (c["tags"]||"")).toLowerCase();
+        if(intel.includes(active.row.toLowerCase()) && active.col && intel.includes(active.col.toLowerCase())){
+            const tags = (c["tags"] || "").split(',').length + 1;
+            const rankData = getRankData(tags);
+            
+            missionGridEmojis[active.index] = rankData.emoji;
+
+            active.cell.innerHTML = `
+                <img src="${getImg(c)}" class="cell-portrait">
+                <div class="filled-info">
+                    <div class="filled-name">${c["operative"]}</div>
+                    <div class="filled-rank" style="color:${active.color}">${rankData.title}</div>
+                </div>`;
+            active.cell.style.borderColor = active.color; 
+            active.cell.classList.add('locked'); 
+            
+            currentScore += rankData.pts;
+            filledCount++;
+            document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+            closeSearch();
+
+            if(filledCount === 9) triggerVictory();
+        } else {
+            currentScore -= 5;
+            document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+            
+            if(!isSharinganMode) {
+                const s = document.createElement('span'); s.className = 'strike-name'; s.innerText = c["operative"];
+                document.getElementById('strike-container').appendChild(s);
+                document.getElementById('search-input').value = "";
+            } else {
+                alert("STRIKE! That operative does not fit the parameters (-5 Pts).");
+            }
+        }
+    }
+
+    function executeBurn() {
+        if(!active) return;
+        
+        let matches = rDB.filter(char => {
+            let cSeries = (char["series"]||"").toLowerCase();
+            let cTags = (char["tags"]||"").toLowerCase();
+            return (cSeries === active.row.toLowerCase() || cTags.includes(active.row.toLowerCase())) &&
+                   (cSeries === active.col.toLowerCase() || cTags.includes(active.col.toLowerCase()));
+        });
+        
+        let charToReveal = matches.length > 0 ? matches[0] : { operative: "CLASSIFIED", "image url": "" };
+        let imgUrl = getImg(charToReveal);
+
+        missionGridEmojis[active.index] = '🔥';
+
+        active.cell.innerHTML = `
+            <div style="position:relative; width:100%; height:100%;">
+                ${imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover; filter: grayscale(100%) contrast(1.2) sepia(1) hue-rotate(-50deg) saturate(4) brightness(0.5);">` : `<div style="width:100%; height:100%; background:#1a0a0a;"></div>`}
+                <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: repeating-linear-gradient(45deg, rgba(255,85,0,0.15), rgba(255,85,0,0.15) 10px, transparent 10px, transparent 20px); z-index:2;"></div>
+                <div style="position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); z-index:3; font-size:3rem; opacity:0.9; text-shadow: 0 0 15px #ff5500;">🔥</div>
+                <div class="filled-info" style="z-index:4; background: linear-gradient(transparent, rgba(30,0,0,0.95)); padding-bottom: 10px;">
+                    <div class="filled-name" style="color:#ffccaa; text-decoration: line-through; text-decoration-color: #ff5500; font-size:0.9rem;">${charToReveal.operative}</div>
+                    <div class="filled-rank" style="color:var(--burn);">BURNED</div>
+                </div>
+            </div>`;
+        
+        active.cell.style.borderColor = 'var(--burn)'; 
+        active.cell.classList.add('locked'); 
+        
+        currentScore -= 15;
+        filledCount++;
+        document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+        closeSearch();
+
+        if(filledCount === 9) triggerVictory();
+    }
+
+    function getRankData(n){
+        if(n<=6) return {title: "LEGENDARY SANNIN", pts: 100, emoji: "🟪"}; 
+        if(n<=11) return {title: "KAGE", pts: 80, emoji: "🟥"}; 
+        if(n<=16) return {title: "ANBU", pts: 60, emoji: "🟨"};
+        if(n<=22) return {title: "JONIN", pts: 40, emoji: "🟩"}; 
+        if(n<=28) return {title: "CHUNIN", pts: 20, emoji: "🟦"}; 
+        return {title: "GENIN", pts: 10, emoji: "⬜"};
+    }
+
+    function startMissionTimer() {
+        startTime = Date.now();
+        filledCount = 0; currentScore = 0;
+        missionGridEmojis = Array(9).fill('⬛'); 
+        document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+        timerInterval = setInterval(() => {
+            const el = Math.floor((Date.now() - startTime) / 1000);
+            const m = String(Math.floor(el / 60)).padStart(2, '0');
+            const s = String(el % 60).padStart(2, '0');
+            document.getElementById('timer-display').innerText = `TIME: ${m}:${s}`;
+        }, 1000);
+    }
+
+    function triggerVictory() {
+        clearInterval(timerInterval);
+        
+        const el = Math.floor((Date.now() - startTime) / 1000);
+        const m = String(Math.floor(el / 60)).padStart(2, '0');
+        const s = String(el % 60).padStart(2, '0');
+        finalTimeString = `${m}:${s}`;
+        
+        document.getElementById('v-time').innerText = finalTimeString;
+        document.getElementById('v-score').innerText = currentScore;
+        
+        if(isSharinganMode) {
+            document.getElementById('transmit-btn').style.display = 'none';
+            document.getElementById('sync-status').innerText = "PRACTICE CLEARED - RANKING DISABLED";
+            document.getElementById('sync-status').style.color = "var(--sharingan)";
+            document.getElementById('player-name').style.display = 'none';
+        } else {
+            document.getElementById('transmit-btn').style.display = 'block';
+            document.getElementById('sync-status').innerText = "Awaiting Transmission...";
+            document.getElementById('sync-status').style.color = "#888";
+            document.getElementById('player-name').style.display = 'block';
+        }
+
+        setTimeout(() => { 
+            document.getElementById('victory-overlay').style.display = 'flex'; 
+            if(!isSharinganMode) document.getElementById('player-name').focus();
+        }, 600);
+    }
+
+    function shareIntel() {
+        let gridStr = "";
+        for(let i=0; i<9; i+=3) {
+            gridStr += missionGridEmojis.slice(i, i+3).join('') + "\n";
+        }
+        
+        const shareText = `Operation: TEAM 7 CIPHER 🏴‍☠️\nMission: ${currentMissionName}\nTime: ${finalTimeString} | Score: ${currentScore}\n\n${gridStr}\nCan you beat my intel?`;
+        
+        navigator.clipboard.writeText(shareText).then(() => {
+            const btn = document.getElementById('share-btn');
+            const origText = btn.innerText;
+            btn.innerText = "INTEL COPIED!";
+            btn.style.backgroundColor = "#00d4ff";
+            btn.style.color = "#000";
+            setTimeout(() => {
+                btn.innerText = origText;
+                btn.style.backgroundColor = "#000";
+                btn.style.color = "var(--host)";
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            alert("Clipboard access denied. Check browser permissions.");
+        });
+    }
+
+    async function transmitScore() {
+        const nameInput = document.getElementById('player-name').value.trim();
+        const codename = nameInput !== "" ? nameInput : "GHOST";
+        const btn = document.getElementById('transmit-btn');
+        const statusText = document.getElementById('sync-status');
+        
+        btn.innerText = "TRANSMITTING..."; btn.disabled = true;
+        
+        const payload = { name: codename, mission: currentMissionName, score: currentScore, timeStr: finalTimeString, rawTime: (Date.now()-startTime) };
+        let lb = JSON.parse(localStorage.getItem('team7_lb') || '[]');
+        lb.push(payload); lb.sort((a,b) => b.score - a.score || a.rawTime - b.rawTime);
+        localStorage.setItem('team7_lb', JSON.stringify(lb.slice(0, 10)));
+
+        try {
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            statusText.innerText = `Data Synced, ${codename}.`; statusText.style.color = "#00ff88"; btn.innerText = "COMPLETE";
+        } catch (e) {
+            statusText.innerText = "Global Sync Failed. Saved Locally."; statusText.style.color = "#ff4d4d"; btn.innerText = "RETRY"; btn.disabled = false;
+        }
+    }
+
+    async function showLeaderboard() {
+        document.getElementById('leaderboard-overlay').style.display = 'flex';
+        const statusText = document.getElementById('lb-status');
+        const container = document.getElementById('lb-data');
+        
+        statusText.innerText = "Connecting to Global Network...";
+        container.innerHTML = "";
+
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            statusText.innerText = "Live Global Intelligence";
+            if(data.length === 0) {
+                container.innerHTML = "<div style='padding:20px; color:#666;'>Archives Empty.</div>";
+                return;
+            }
+            data.forEach(entry => {
+                container.innerHTML += `
+                    <div class="lb-row">
+                        <span style="flex:2; font-weight:bold;">${entry.name}</span>
+                        <span style="flex:2; font-size:0.8rem; color:#aaa;">${entry.mission}</span>
+                        <span style="flex:1; text-align:center; color:var(--accent); font-weight:900;">${entry.score}</span>
+                        <span style="flex:1; text-align:right;">${entry.timeStr}</span>
+                    </div>`;
+            });
+        } catch (e) {
+            statusText.innerText = "Network Error. Showing Local Backup.";
+            statusText.style.color = "#ff4d4d";
+            const lb = JSON.parse(localStorage.getItem('team7_lb') || '[]');
+            if(lb.length === 0) container.innerHTML = "No Local Data.";
+            lb.forEach(entry => {
+                container.innerHTML += `<div class="lb-row"><span style="flex:2">${entry.name || 'Unknown'}</span><span style="flex:2">${entry.mission}</span><span style="flex:1; text-align:center; color:var(--accent)">${entry.score}</span><span style="flex:1; text-align:right;">${entry.timeStr}</span></div>`;
+            });
+        }
+    }
+
+    function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
+    function closeSearch() { document.getElementById('search-terminal').style.display = 'none'; }
+    function abortMission() { document.body.style.backgroundColor = '#050507'; location.reload(); }
+    init();
+</script>
+</body>
+</html>
