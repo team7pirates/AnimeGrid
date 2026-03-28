@@ -1,0 +1,3 @@
+https://lfhh.radioca.st/stream
+https://icecast.radiofrance.fr/fiphiphop-midfi.mp3
+https://icecast.walmradio.com:8443/classic
