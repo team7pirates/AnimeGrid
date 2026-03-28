@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPERATION: TEAM 7 CIPHER</title>
+    <style>
+        :root {
+            --bg: #050507;
+            --panel: #0f0f12;
+            --text: #e0e0e0;
+            --border: #1f1f26;
+            --search-bg: rgba(255, 255, 255, 0.98);
+            
+            /* Dynamic Variables - Changed by JS */
+            --accent: #9d4edd; 
+            --rank-a: #ff4d4d;
+            --rank-b: #ffb703;
+            --rank-c: #00ff88;
+            --host: #ff3366; 
+            --burn: #ff5500; 
+            --sharingan: #ff0033; 
+            --relay: #ffaa00; 
+            --ghost: #e63946; 
+            --bounty: #00d4ff;
+            --gauntlet: #ff0033;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        @keyframes ghostFlash { 0% { box-shadow: inset 0 0 0px var(--ghost); } 50% { box-shadow: inset 0 0 40px var(--ghost); } 100% { box-shadow: inset 0 0 0px var(--ghost); } }
+        @keyframes timeAdd { 0% { color: #00ff88; text-shadow: 0 0 20px #00ff88; transform: scale(1.2); } 100% { color: #fff; text-shadow: none; transform: scale(1); } }
+        @keyframes timeSub { 0% { color: #ff0033; text-shadow: 0 0 20px #ff0033; transform: scale(1.2); } 100% { color: #fff; text-shadow: none; transform: scale(1); } }
+
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background 0.8s ease; overflow-x: hidden;}
+
+        #main-container { width: 100%; max-width: 1200px; padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        
+        #hq-lobby { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        
+        .lobby-title { font-size: clamp(1.8rem, 8vw, 3.5rem); font-weight: 900; letter-spacing: 12px; margin-bottom: 3vh; text-transform: uppercase; text-shadow: 0 0 15px rgba(255, 255, 255, 0.2); text-align: center; width: 100%; }
+        
+        /* --- THE THREE PILLARS UI --- */
+        #pillar-menu { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 850px; }
+        
+        .pillar-card { display: block; text-align: center; background: var(--panel); border: 2px solid #333; padding: 30px 20px; border-radius: 6px; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
+        .pillar-card:hover { transform: scale(1.02); background: #16161d; box-shadow: 0 0 25px rgba(255,255,255,0.1); border-color: #777;}
+        .pillar-title { font-size: clamp(1.5rem, 5vw, 2.2rem); font-weight: 900; letter-spacing: 8px; text-transform: uppercase; margin: 0 0 8px 0; display: block; }
+        .pillar-sub { color: #888; font-size: 0.9rem; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; display: block; }
+        
+        .pillar-ops { border-color: var(--accent); }
+        .pillar-ops:hover { box-shadow: 0 0 30px rgba(157, 78, 221, 0.3); border-color: var(--accent);}
+        .pillar-ops .pillar-title { color: var(--accent); }
+
+        .pillar-squad { border-color: var(--relay); }
+        .pillar-squad:hover { box-shadow: 0 0 30px rgba(255, 170, 0, 0.3); border-color: var(--relay);}
+        .pillar-squad .pillar-title { color: var(--relay); }
+
+        .pillar-bounty { border-color: var(--bounty); }
+        .pillar-bounty:hover { box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); border-color: var(--bounty);}
+        .pillar-bounty .pillar-title { color: var(--bounty); }
+
+        /* --- SUB-PANELS --- */
+        .sub-panel { display: none; width: 100%; max-width: 850px; flex-direction: column; align-items: center; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .back-btn { background: transparent; border: none; color: #888; font-size: 1rem; font-weight: bold; letter-spacing: 2px; cursor: pointer; margin-bottom: 20px; transition: 0.2s; text-transform: uppercase; display: flex; align-items: center; gap: 10px;}
+        .back-btn:hover { color: #fff; }
+
+        .mode-tab { display: block; text-align: center; width: 100%; background: var(--panel); padding: 20px; margin-bottom: 15px; cursor: pointer; transition: 0.3s; border-radius: 4px; border: 2px solid; }
+        .tab-host { border-color: var(--host); } .tab-host:hover { background: #16161d; box-shadow: 0 0 20px rgba(255, 51, 102, 0.3); transform: scale(1.02); } .title-host { color: var(--host); }
+        .tab-relay { border-color: var(--relay); } .tab-relay:hover { background: #16161d; box-shadow: 0 0 20px rgba(255, 170, 0, 0.3); transform: scale(1.02); } .title-relay { color: var(--relay); }
+        .tab-ghost { border-color: var(--ghost); } .tab-ghost:hover { background: #16161d; box-shadow: 0 0 20px rgba(230, 57, 70, 0.3); transform: scale(1.02); } .title-ghost { color: var(--ghost); }
+        .tab-gauntlet { border-color: var(--gauntlet); } .tab-gauntlet:hover { background: #16161d; box-shadow: 0 0 20px rgba(255, 0, 51, 0.3); transform: scale(1.02); } .title-gauntlet { color: var(--gauntlet); }
+
+        .tab-title { font-size: clamp(1.2rem, 4vw, 1.8rem); font-weight: 900; letter-spacing: 6px; text-transform: uppercase; margin: 0 0 5px 0; display: block; }
+        .tab-sub { color: #888; font-size: 0.8rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; display: block; }
+
+        .diff-container { width: 100%; background: var(--panel); border: 2px solid var(--accent); padding: 30px; border-radius: 4px; margin-bottom: 20px; text-align: center; }
+        .diff-header { color: var(--accent); letter-spacing: 5px; text-transform: uppercase; margin-top: 0; margin-bottom: 25px; font-size: 1.2rem; }
+        .diff-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; }
+        .diff-btn { background: #050507; border: 2px solid var(--c); color: var(--c); font-size: 1.5rem; font-weight: 900; padding: 15px 0; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .diff-btn:hover { background: var(--c); color: #000; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+        .sharingan-btn { width: 100%; margin-top: 20px; border: 2px solid var(--sharingan); color: var(--sharingan); background: #050507; padding: 15px; font-size: 1.2rem; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 4px; }
+        .sharingan-btn:hover { background: var(--sharingan); color: #fff; box-shadow: 0 0 20px rgba(255, 0, 51, 0.5); }
+
+        /* --- BOUNTY BOARD CSS --- */
+        #bounty-board-panel { width: 100%; max-width: 850px; background: var(--panel); border: 2px solid var(--bounty); padding: 30px; border-radius: 6px; text-align: center; }
+        .bounty-header { color: var(--bounty); font-size: 2.5rem; font-weight: 900; letter-spacing: 8px; margin: 0 0 10px 0; text-transform: uppercase; text-shadow: 0 0 15px rgba(0, 212, 255, 0.3); user-select: none; }
+        .bounty-image-container { position: relative; width: 250px; height: 250px; margin: 20px auto; border: 4px solid #333; border-radius: 8px; overflow: hidden; background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        .bounty-target-img { width: 100%; height: 100%; object-fit: cover; filter: blur(20px) grayscale(100%) brightness(0.5); transition: filter 1s ease, filter 1s ease; }
+        .bounty-target-img.revealed { filter: blur(0px) grayscale(0%) brightness(1); border: 2px solid #00ff88;}
+        .bounty-status-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; font-weight: 900; color: #ff0033; text-shadow: 0 0 20px #000; z-index: 10; letter-spacing: 10px; opacity: 0.7; transform: translate(-50%, -50%) rotate(-15deg); border: 4px solid #ff0033; padding: 10px; display: none; }
+        
+        .bounty-progress-container { width: 100%; max-width: 500px; margin: 20px auto; background: #050507; border: 2px solid #333; border-radius: 4px; height: 30px; position: relative; overflow: hidden; }
+        .bounty-progress-bar { height: 100%; background: linear-gradient(90deg, #005f73, var(--bounty)); width: 0%; transition: width 0.5s ease; }
+        .bounty-progress-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: monospace; font-weight: bold; color: #fff; font-size: 1rem; letter-spacing: 2px; z-index: 2; text-shadow: 0 1px 2px #000; }
+        
+        .bounty-clue-box { background: #050507; border: 1px dashed #555; padding: 15px; margin: 20px 0; border-radius: 4px; color: #aaa; font-style: italic; min-height: 60px; display: flex; justify-content: center; align-items: center; }
+        .bounty-clue-text { letter-spacing: 1px; font-size: 1rem; }
+        
+        .bounty-input-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        #bounty-guess { flex: 1; max-width: 300px; padding: 15px; background: #000; border: 2px solid #333; color: #fff; font-size: 1.2rem; text-align: center; text-transform: uppercase; font-weight: bold; border-radius: 4px; outline: none; transition: 0.3s; }
+        #bounty-guess:focus { border-color: var(--bounty); box-shadow: 0 0 15px rgba(0, 212, 255, 0.2); }
+        #bounty-guess:disabled { opacity: 0.5; cursor: not-allowed; }
+        #bounty-submit-btn { background: #050507; border: 2px solid #333; color: #555; padding: 0 30px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; cursor: not-allowed; border-radius: 4px; transition: 0.3s; }
+        #bounty-submit-btn.active { border-color: var(--bounty); color: var(--bounty); cursor: pointer; }
+        #bounty-submit-btn.active:hover { background: var(--bounty); color: #000; }
+        
+        #view-archives-btn { display: none; background: #050507; border: 2px solid var(--bounty); color: var(--bounty); padding: 15px 30px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-radius: 4px; transition: 0.3s; margin: 20px auto 0 auto; width: 100%; max-width: 300px;}
+        #view-archives-btn:hover { background: var(--bounty); color: #000; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
+
+        @media (max-width: 600px) {
+            .diff-grid { gap: 8px; }
+            .diff-btn { font-size: 1.2rem; padding: 10px 0; }
+            .bounty-input-group { flex-direction: column; }
+            #bounty-submit-btn { padding: 15px; }
+        }
+
+        #game-theater, #leaderboard-overlay, #hunter-archives-overlay, #victory-overlay, #briefing-overlay, #bounty-intel-overlay, #reverse-intel-overlay, #loading-overlay, #sharingan-terminal, #relay-overlay, #ghost-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 500; backdrop-filter: blur(10px); }
+        .lb-content { width: 90%; max-width: 600px; background: var(--panel); border: 2px solid #fff; padding: 35px 25px; text-align: center; border-radius: 6px; box-shadow: 0 0 40px rgba(0,0,0,0.8); position: relative; display: flex; flex-direction: column; align-items: center; max-height: 90vh;}
+        
+        #hud { display: flex; justify-content: space-between; align-items: center; width: 95vw; max-width: 800px; margin-bottom: 15px; font-family: monospace; font-size: 1.2rem; font-weight: bold; padding: 0 10px; }
+        #timer-display { color: #fff; transition: 0.2s; }
+        #extr-display { color: var(--relay); display: none; }
+        #duel-display { color: var(--ghost); display: none; }
+        #score-display { color: var(--accent); }
+
+        /* Dynamic Grid Layouts */
+        .grid-frame { display: grid; gap: 1vw; width: 95vw; aspect-ratio: 1/1; z-index: 105; transition: 0.3s ease; }
+        .grid-3x3 { grid-template-columns: 18% repeat(3, 26%); grid-template-rows: auto repeat(3, 1fr); max-width: 800px;}
+        .grid-2x2 { grid-template-columns: 20% repeat(2, 38%); grid-template-rows: auto repeat(2, 1fr); max-width: 550px;}
+        
+        .node { background: rgba(0, 0, 0, 0.85); border: 1px solid rgba(255,255,255,0.2); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; overflow: hidden; }
+        .header-node { font-weight: 900; text-transform: uppercase; font-size: clamp(0.6rem, 2vw, 0.85rem); padding: 5px; line-height: 1.2; }
+        .play-node { cursor: pointer; transition: 0.2s; }
+        .play-node:hover { border-color: white; background: rgba(255,255,255,0.1); z-index: 110; }
+        .ghost-locked { animation: ghostFlash 2s infinite; border-color: var(--ghost) !important; cursor: not-allowed; }
+        
+        .cell-portrait { width: 100%; height: 100%; object-fit: cover; position: absolute; z-index: 1; filter: brightness(0.85); }
+        .filled-info { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,1) 40%); padding: 25px 5px 10px; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .filled-name { font-size: clamp(0.7rem, 2.5vw, 1rem); font-weight: 900; line-height: 1.1; margin-bottom: 4px; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .filled-rank { font-size: clamp(0.5rem, 1.5vw, 0.65rem); opacity: 0.9; font-weight: bold; letter-spacing: 1px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+
+        #search-terminal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 600; backdrop-filter: blur(10px); }
+        .terminal-box { width: 90%; max-width: 500px; background: var(--panel); border: 2px solid #fff; padding: 25px; border-radius: 8px; text-align: center; position: relative; }
+        
+        #search-input { width: 100%; padding: 14px; border-radius: 4px; border: 1px solid #444; background: #000; color: #fff; font-size: 1.2rem; text-align: center; outline: none; margin-top: 10px; font-weight: bold; }
+        #results-list { max-height: 200px; overflow-y: auto; margin-top: 15px; background: #14141a; border-radius: 4px; border: 1px solid #222; }
+        .result-item { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid #1f1f26; cursor: pointer; text-align: left; }
+        .result-item:hover { background: #1d1d2b; }
+        .result-thumb { width: 45px; height: 45px; border-radius: 50%; margin-right: 15px; border: 2px solid #333; object-fit: cover; flex-shrink: 0; }
+        .result-meta { display: flex; flex-direction: column; justify-content: center; }
+        
+        #strike-container { margin-top: 15px; margin-bottom: 5px; font-size: 0.85rem; color: #ff4d4d; font-weight: bold; }
+        .strike-name { text-decoration: line-through; margin-right: 12px; opacity: 0.7; }
+
+        .lb-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px solid #222; font-family: monospace; font-size: 1rem; text-align: left; width: 100%;}
+        .lb-header { font-weight: bold; color: var(--accent); border-bottom: 2px solid var(--accent); font-size: 0.9rem; letter-spacing: 2px; }
+        #lb-data, #ha-data { width: 100%; overflow-y: auto; }
+        
+        .victory-title { font-size: clamp(2rem, 6vw, 3.5rem); color: #00ff88; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 15px; margin-top: 0; text-shadow: 0 0 20px rgba(0,255,136,0.4); }
+        .victory-stat { font-size: 1.5rem; margin: 15px 0; font-family: monospace; font-weight: bold; }
+        #victory-emoji-grid { font-size: 2rem; letter-spacing: 6px; line-height: 1.3; margin: 15px 0; display: none; }
+        
+        #player-name { 
+            width: 100%; 
+            max-width: 300px; 
+            padding: 15px; 
+            margin: 20px auto 15px auto;
+            display: block; 
+            font-size: 1.2rem; 
+            text-align: center; 
+            background: #000; 
+            border: 2px solid #00ff88; 
+            color: #fff; 
+            outline: none; 
+            text-transform: uppercase; 
+            position: relative; 
+            z-index: 9999; 
+            pointer-events: auto; 
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); 
+            border-radius: 4px; 
+            box-sizing: border-box;
+        }
+        #player-name:focus { border-color: #fff; box-shadow: 0 0 25px rgba(255, 255, 255, 0.5); }
+
+        .btn { padding: 16px 32px; margin-top: 15px; cursor: pointer; font-weight: 900; text-transform: uppercase; border: 1px solid #444; background: #000; color: #fff; border-radius: 4px; letter-spacing: 2px; transition: 0.2s; position: relative; z-index: 9999; display: inline-block;}
+        .btn:hover { background: #fff; color: #000; border-color: #fff; transform: scale(1.05); }
+        
+        .btn-transmit { border-color: #00ff88; color: #00ff88; }
+        .btn-transmit:hover { background: #00ff88; color: #000; }
+        .btn-share { border-color: var(--host); color: var(--host); }
+        .btn-share:hover { background: var(--host); color: #000; }
+        .btn-burn { border-color: var(--burn); color: var(--burn); }
+        .btn-burn:hover { background: var(--burn); color: #000; border-color: var(--burn); }
+        .btn-relay { border-color: var(--relay); color: var(--relay); width: 100%; font-size: 1.2rem;}
+        .btn-relay:hover { background: var(--relay); color: #000; }
+        .btn-ghost { border-color: var(--ghost); color: var(--ghost); width: 100%; font-size: 1.2rem;}
+        .btn-ghost:hover { background: var(--ghost); color: #000; }
+
+        .briefing-text { text-align: left; font-size: 1.1rem; line-height: 1.6; margin-bottom: 20px; color: #ccc; max-height: 55vh; overflow-y: auto; padding-right: 15px; width: 100%; }
+        .briefing-text::-webkit-scrollbar { width: 6px; }
+        .briefing-text::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        .briefing-text strong { color: #fff; }
+        .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; font-weight: bold; background: #050507; padding: 15px; border-radius: 6px; border: 1px solid #333;}
+        .info-box { text-align: left; background: #0a0a0f; padding: 15px; border-radius: 6px; border: 1px solid #333; margin-bottom: 15px; }
+
+        #sharingan-options::-webkit-scrollbar { width: 6px; }
+        #sharingan-options::-webkit-scrollbar-thumb { background: var(--sharingan); border-radius: 3px; }
+
+        /* --- MUTE BUTTON --- */
+        #audio-toggle {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #444;
+            color: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1000000;
+            transition: 0.3s;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        #audio-toggle:hover { border-color: #fff; transform: scale(1.1); }
+
+        /* --- AAR RETURN BUTTON --- */
+        #return-debrief-btn {
+            display: none; 
+            position: fixed; 
+            bottom: 25px; 
+            left: 25px; 
+            z-index: 1000000; 
+            background: rgba(0,0,0,0.9); 
+            border: 2px solid #fff; 
+            color: #fff; 
+            padding: 12px 24px; 
+            font-size: 1rem; 
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3); 
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        #return-debrief-btn:hover { background: #fff; color: #000; transform: scale(1.05); }
+
+    </style>
+</head>
+<body>
+
+<div id="audio-toggle" onclick="toggleMute()">🔊</div>
+
+<audio id="lobby-music" preload="auto"></audio>
+
+<button id="return-debrief-btn" onclick="returnToDebrief()">⬅️ BACK TO DEBRIEF</button>
+
+<div id="loading-overlay" style="z-index: 999999;">
+    <h2 style="color:var(--accent); letter-spacing: 5px; animation: pulse 1s infinite; font-size: 1.5rem; text-align:center; padding: 20px;">CALCULATING<br>TACTICAL PARAMETERS...</h2>
+</div>
+
+<div id="reverse-intel-overlay" onclick="closeOverlay('reverse-intel-overlay')" style="display:none; z-index: 99999; cursor: pointer; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+    <div class="lb-content" style="border-color: var(--accent); padding: 30px;">
+        <h1 style="color:var(--accent); letter-spacing: 5px; margin-top: 0; font-size: 2rem; text-shadow: 0 0 15px rgba(157, 78, 221, 0.2);">REVERSE PROTOCOL</h1>
+        <div class="briefing-text">
+            <p style="margin-top: 0;"><strong>⚠️ WARNING: SENSORY OVERLOAD IMMINENT.</strong></p>
+            <p><strong>🕒 THE CLOCK:</strong> You have exactly 5:00 minutes. If the clock hits 0:00, the mission fails and you score zero points.</p>
+            <p><strong>🧠 THE FLIP:</strong> Grid clues and search results are spelled completely backwards. The difficulty levels on the main screen are also flipped (Level 1 is now Hardcore. Level 10 is Easy).</p>
+            <p><strong>❌ PENALTIES:</strong> Strikes cost -5 seconds. Burns cost -60 seconds.</p>
+            <div class="info-box" style="border-color: #00ff88;">
+                <p style="margin-top: 0; color: #00ff88;"><strong>💎 THE PAYOUT</strong></p>
+                <p style="margin-bottom: 0; font-size: 0.95rem; color: #bbb;">If you survive and clear the board before time runs out, your final score is multiplied by <strong>7x</strong>. This is the fastest way to grind the Hunt Tracker.</p>
+            </div>
+        </div>
+        <button class="btn" style="width:100%; border-color: var(--accent); color: var(--accent); pointer-events: none; margin-top: 10px;">[ Tap Anywhere to Begin ]</button>
+    </div>
+</div>
+
+<div id="bounty-intel-overlay" onclick="closeOverlay('bounty-intel-overlay')" style="display:none; z-index: 99999; cursor: pointer; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+    <div class="lb-content" style="border-color: var(--bounty); padding: 30px;">
+        <h1 style="color:var(--bounty); letter-spacing: 5px; margin-top: 0; font-size: 2rem; text-shadow: 0 0 15px rgba(0, 212, 255, 0.2);">HUNT PROTOCOL INTEL</h1>
+        <div class="briefing-text">
+            <p style="margin-top: 0;"><strong>🎯 THE TARGET:</strong> A mystery operative is currently being hunted. The target is identical for all players globally and resets weekly.</p>
+            <p><strong>📈 THE GRIND:</strong> Play Standard Operations. Every point you score is banked into your personal Hunt Tracker.</p>
+            <p><strong>🔓 THE DECRYPTION:</strong> Reach 5,000 Points to decrypt a massive clue about the target's identity.</p>
+            <p><strong>🏆 THE LOCKOUT:</strong> Reach 10,000 Points to unlock the targeting computer. The absolute FIRST person in the world to guess the operative correctly locks the board for everyone globally.</p>
+            <div class="info-box" style="border-color: var(--host);">
+                <p style="margin-top: 0; color: var(--host);"><strong>📺 THE REVEAL</strong></p>
+                <p style="margin-bottom: 0; font-size: 0.95rem; color: #bbb;">Who completed the hunt? Watch the team7pirates upload every Thursday at 0445 CST to find out. The website board resets and reveals the winner the following day.</p>
+            </div>
+        </div>
+        <button class="btn" style="width:100%; border-color: var(--bounty); color: var(--bounty); pointer-events: none; margin-top: 10px;">[ Tap Anywhere to Begin Hunt ]</button>
+    </div>
+</div>
+
+<div id="briefing-overlay" onclick="startAudioAndCloseBriefing()" style="display:flex; z-index: 99999; cursor: pointer;">
+    <div class="lb-content" id="brief-box" style="border-color: var(--accent); padding: 30px;">
+        <h1 id="brief-title" style="color:var(--accent); letter-spacing: 5px; margin-top: 0; font-size: 2rem; text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);">TACTICAL BRIEFING</h1>
+        <div class="briefing-text">
+            <p style="margin-top: 0;"><strong>OBJECTIVE:</strong> Decode the grid by identifying operatives that match BOTH the intersecting Row and Column criteria.</p>
+            
+            <p><strong>SCORING SYSTEM:</strong> Points are awarded based on operative rarity.</p>
+            <div class="score-grid">
+                <div><span id="brief-s" style="color:var(--accent)">SANNIN:</span> 100 PTS</div>
+                <div><span id="brief-a" style="color:var(--rank-a)">KAGE:</span> 80 PTS</div>
+                <div><span id="brief-b" style="color:var(--rank-b)">ANBU:</span> 60 PTS</div>
+                <div><span id="brief-c" style="color:var(--rank-c)">JONIN:</span> 40 PTS</div>
+                <div><span style="color:#00d4ff">CHUNIN:</span> 20 PTS</div>
+                <div><span style="color:#aaa">GENIN:</span> 10 PTS</div>
+            </div>
+
+            <p style="margin-top: 15px; color: var(--accent);"><strong>⭐ STANDARD OPERATIONS BONUS:</strong> Higher difficulty levels grant permanent point multipliers!</p>
+            <p style="font-size: 0.9rem; font-style: italic; color: #bbb;">(Lv 1-3: 1x | Lv 4-6: 2x | Lv 7-8: 3x | Lv 9-10: 4x)</p>
+
+            <div class="info-box" style="border-color: var(--gauntlet); margin-top: 20px;">
+                <p style="margin-top: 0; color: var(--gauntlet);"><strong>☠️ THE GAUNTLET (SURVIVAL)</strong></p>
+                <p style="margin-bottom: 0; font-size: 0.95rem; color: #bbb;">3:00 on the clock. Survive the growing phases. Clear the board to inject time into your clock. Strikes cost -5s. Burns cost -15s.</p>
+            </div>
+            <div class="info-box" style="border-color: var(--relay);">
+                <p style="margin-top: 0; color: var(--relay);"><strong>🤝 PASS THE BATON (RELAY)</strong></p>
+                <p style="margin-bottom: 0; font-size: 0.95rem; color: #bbb;">Co-op Operation. You are limited to exactly 2 extractions. Once you hit your limit, you will generate a Data Link to pass the board to your teammate.</p>
+            </div>
+            <div class="info-box" style="border-color: var(--ghost);">
+                <p style="margin-top: 0; color: var(--ghost);"><strong>⚔️ GHOST DUEL (VERSUS)</strong></p>
+                <p style="margin-bottom: 0; font-size: 0.95rem; color: #bbb;">A tactical Tug-of-War. The board tracks the exact timestamps of the creator's extractions. You must race to claim 5 squares before the invisible Ghost locks them out.</p>
+            </div>
+            <p style="color: var(--burn); font-weight: bold; font-size: 0.9rem;">🔥 BURN PROTOCOL: You may bypass any stubborn square for a -15 POINT penalty.</p>
+            <p style="color: #ff4d4d; font-weight: bold; font-size: 0.9rem; margin-bottom: 0;">❌ WARNING: Every incorrect guess (Strike) results in a -5 POINT penalty.</p>
+        </div>
+        <button class="btn" id="brief-btn" style="width:100%; border-color: var(--accent); color: var(--accent); pointer-events: none; margin-top: 10px;">[ Tap Anywhere to Begin ]</button>
+    </div>
+</div>
+
+<div id="main-container">
+    <div id="hq-lobby">
+        <h1 class="lobby-title">TEAM 7 CIPHER</h1>
+        
+        <div id="pillar-menu">
+            <div class="pillar-card pillar-ops" onclick="showPanel('standard-ops-panel')">
+                <h2 class="pillar-title">STANDARD OPERATIONS</h2>
+                <div class="pillar-sub">Solo Deployment & Training</div>
+            </div>
+
+            <div class="pillar-card pillar-squad" onclick="showPanel('squad-missions-panel')">
+                <h2 class="pillar-title">SQUAD MISSIONS</h2>
+                <div class="pillar-sub">Multiplayer & Versus Ops</div>
+            </div>
+
+            <div class="pillar-card pillar-bounty" onclick="openBountyBoard()">
+                <h2 class="pillar-title">THE HUNT PROTOCOL</h2>
+                <div class="pillar-sub">Weekly YouTube Mystery Target</div>
+            </div>
+            
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
+                <button class="btn" onclick="showLeaderboard()">Global Rankings</button>
+                <button class="btn" onclick="document.getElementById('briefing-overlay').style.display='flex'" style="border-color:#555; color:#aaa;">Rules & Intel</button>
+            </div>
+        </div>
+
+        <div id="standard-ops-panel" class="sub-panel">
+            <button class="back-btn" onclick="showPanel('pillar-menu')">⬅ Return to HQ</button>
+            <div class="diff-container">
+                <button id="reverse-toggle-btn" class="btn" style="width: 100%; border-color: #555; color: #aaa; margin-bottom: 20px; margin-top: 0; background: #050507;" onclick="toggleReverseMode()">REVERSE MODE: OFF</button>
+                
+                <h3 class="diff-header">SELECT DIFFICULTY</h3>
+                <div class="diff-grid">
+                    <div class="diff-btn" style="--c: var(--rank-c)" onclick="autoGenerate(1)">1</div>
+                    <div class="diff-btn" style="--c: var(--rank-c)" onclick="autoGenerate(2)">2</div>
+                    <div class="diff-btn" style="--c: var(--rank-c)" onclick="autoGenerate(3)">3</div>
+                    <div class="diff-btn" style="--c: var(--rank-b)" onclick="autoGenerate(4)">4</div>
+                    <div class="diff-btn" style="--c: var(--rank-b)" onclick="autoGenerate(5)">5</div>
+                    <div class="diff-btn" style="--c: var(--rank-b)" onclick="autoGenerate(6)">6</div>
+                    <div class="diff-btn" style="--c: var(--rank-a)" onclick="autoGenerate(7)">7</div>
+                    <div class="diff-btn" style="--c: var(--rank-a)" onclick="autoGenerate(8)">8</div>
+                    <div class="diff-btn" style="--c: var(--accent)" onclick="autoGenerate(9)">9</div>
+                    <div class="diff-btn" style="--c: var(--accent)" onclick="autoGenerate(10)">10</div>
+                </div>
+                <button class="sharingan-btn" onclick="launchSharingan()">👁️ Sharingan Training Mode</button>
+            </div>
+        </div>
+
+        <div id="squad-missions-panel" class="sub-panel">
+            <button class="back-btn" onclick="showPanel('pillar-menu')">⬅ Return to HQ</button>
+            <div class="mode-tab tab-gauntlet" onclick="startGauntlet()">
+                <h2 class="tab-title title-gauntlet">THE GAUNTLET</h2>
+                <div class="tab-sub">SURVIVAL TIME ATTACK</div>
+            </div>
+            <div class="mode-tab tab-relay" onclick="startNewRelay()">
+                <h2 class="tab-title title-relay">PASS THE BATON</h2>
+                <div class="tab-sub">START A SQUAD RELAY (DAILY DIFFICULTY)</div>
+            </div>
+            <div class="mode-tab tab-ghost" onclick="startGhostCreation()">
+                <h2 class="tab-title title-ghost">GHOST DUEL</h2>
+                <div class="tab-sub">RECORD A HEAD-TO-HEAD MATCH (LVL 6)</div>
+            </div>
+            <div class="mode-tab tab-host" onclick="launchHostChallenge()">
+                <h2 class="tab-title title-host">HOST CHALLENGE</h2>
+                <div class="tab-sub" id="host-sub">RETRIEVING PODCAST INTEL...</div>
+            </div>
+        </div>
+
+        <div id="bounty-board-panel" class="sub-panel" style="display: none;">
+            <button class="back-btn" onclick="showPanel('pillar-menu')">⬅ Return to HQ</button>
+            <h2 class="bounty-header" onclick="adminCheck()" style="cursor: default;">THE HUNT PROTOCOL</h2>
+            <div style="color: #aaa; font-style: italic; margin-bottom: 10px; font-size: 0.9rem;">First to identify the target locks the board globally.</div>
+            
+            <div class="bounty-image-container">
+                <img src="https://placehold.co/300x300/111/ff0033?text=TARGET+LOCKED" class="bounty-target-img" id="bounty-img">
+                <div class="bounty-status-overlay" id="bounty-lock-stamp">CLAIMED</div>
+            </div>
+
+            <div class="bounty-progress-container">
+                <div class="bounty-progress-bar" id="bounty-bar"></div>
+                <div class="bounty-progress-text" id="bounty-tracker-text">0 / 10000 PTS</div>
+            </div>
+
+            <div class="bounty-clue-box">
+                <span class="bounty-clue-text" id="bounty-clue">🔒 CLUE ENCRYPTED: Reach 5,000 Points to decrypt.</span>
+            </div>
+
+            <div class="bounty-input-group">
+                <input type="text" id="bounty-guess" placeholder="ACQUIRING TARGET DATA..." disabled autocomplete="off">
+                <button id="bounty-submit-btn" onclick="submitBountyGuess()">SUBMIT</button>
+            </div>
+            
+            <button id="view-archives-btn" onclick="showHunterArchives()">VIEW HUNTER ARCHIVES</button>
+
+            <div id="bounty-feedback" style="margin-top: 15px; font-weight: bold; color: #ff0033; min-height: 20px;"></div>
+
+            <div style="display: flex; gap: 10px; width: 100%; margin-top: 25px;">
+                <button class="btn" onclick="document.getElementById('bounty-intel-overlay').style.display='flex'" style="flex: 1; border-color: #555; color: #aaa; font-size: 1rem; margin-top: 0;">RULES & INTEL</button>
+                <button class="btn" onclick="showPanel('standard-ops-panel')" style="flex: 2; border-color: var(--accent); color: var(--accent); font-size: 1.1rem; margin-top: 0;">DEPLOY TO OPS</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="relay-overlay">
+    <div class="lb-content" style="border-color: var(--relay);">
+        <h1 style="font-size: clamp(2rem, 6vw, 3rem); color: var(--relay); text-transform: uppercase; letter-spacing: 5px; margin-bottom: 15px; margin-top: 0; text-shadow: 0 0 20px rgba(255,170,0,0.4);">BATON READY</h1>
+        <p style="font-size: 1.1rem; color: #ccc; margin-bottom: 30px;">Extraction limit reached. The board is locked. <br>Copy the Data Link below and pass it to your squad.</p>
+        <button class="btn btn-relay" onclick="generateRelayLink()" id="relay-copy-btn">COPY HANDOFF LINK</button>
+        <button class="btn" onclick="abortMission()" style="width: 100%; margin-top: 15px;">Exit Operation</button>
+    </div>
+</div>
+
+<div id="ghost-overlay">
+    <div class="lb-content" style="border-color: var(--ghost);">
+        <h1 style="font-size: clamp(2rem, 6vw, 3rem); color: var(--ghost); text-transform: uppercase; letter-spacing: 5px; margin-bottom: 15px; margin-top: 0; text-shadow: 0 0 20px rgba(230, 57, 70,0.4);">GHOST RECORDED</h1>
+        <p style="font-size: 1.1rem; color: #ccc; margin-bottom: 30px;">Your extraction times have been locked into the mainframe. Generate your Duel Link to challenge the community.</p>
+        <button class="btn btn-ghost" onclick="generateGhostLink()" id="ghost-copy-btn">ENCODE DUEL LINK</button>
+        <button class="btn" onclick="abortMission()" style="width: 100%; margin-top: 15px;">Return to HQ</button>
+    </div>
+</div>
+
+<div id="leaderboard-overlay">
+    <div class="lb-content">
+        <h2 style="color:#fff; letter-spacing: 4px; margin-top:0;">GLOBAL RANKINGS</h2>
+        <div id="lb-status" style="font-size: 0.7rem; color: #00ff88; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Retrieving Server Data...</div>
+        <div class="lb-row lb-header">
+            <span style="flex:2">CODENAME</span>
+            <span style="flex:2">MISSION</span>
+            <span style="flex:1; text-align:right;">SCORE</span>
+        </div>
+        <div id="lb-data"></div>
+        <button class="btn" onclick="closeOverlay('leaderboard-overlay')" style="width:100%">Return to HQ</button>
+    </div>
+</div>
+
+<div id="hunter-archives-overlay">
+    <div class="lb-content" style="border-color: var(--bounty);">
+        <h2 style="color:var(--bounty); letter-spacing: 4px; margin-top:0; text-shadow: 0 0 15px rgba(0, 212, 255, 0.4);">HUNTER ARCHIVES</h2>
+        <div id="ha-status" style="font-size: 0.7rem; color: #00ff88; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Accessing Hunter Databanks...</div>
+        <div class="lb-row lb-header" style="border-color: var(--bounty); color: var(--bounty);">
+            <span style="flex:2">CODENAME</span>
+            <span style="flex:2">TARGET</span>
+            <span style="flex:1; text-align:right;">DATE</span>
+        </div>
+        <div id="ha-data"></div>
+        <button class="btn" onclick="closeOverlay('hunter-archives-overlay')" style="width:100%; border-color: var(--bounty); color: var(--bounty);">Close Archives</button>
+    </div>
+</div>
+
+<div id="victory-overlay">
+    <div class="lb-content" id="victory-box" style="border-color: #00ff88;">
+        <h1 class="victory-title" id="victory-title-text">MISSION CLEAR</h1>
+        <div class="victory-stat" id="stat-time-container">Time: <span id="v-time" style="color:#fff"></span></div>
+        <div class="victory-stat" id="stat-score-container">Score: <span id="v-score" style="color:var(--accent)"></span></div>
+        
+        <div id="victory-emoji-grid"></div>
+
+        <input type="text" id="player-name" placeholder="ENTER CODENAME..." maxlength="12">
+        <div id="sync-status" style="font-size: 0.8rem; color: #888; margin-bottom: 15px; font-style: italic;">Awaiting Transmission...</div>
+        
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-transmit" onclick="transmitScore()" id="transmit-btn">Transmit Score</button>
+            <button class="btn btn-share" onclick="shareIntel()" id="share-btn">Copy Intel</button>
+            <button class="btn" onclick="reviewBoard()" id="review-btn" style="border-color: #aaa; color: #ccc;">Review Grid</button>
+            <button class="btn" onclick="abortMission()">Exit</button>
+        </div>
+    </div>
+</div>
+
+<div id="game-theater" style="z-index: 100;">
+    <h2 id="op-title" style="margin-bottom:10px; margin-top:0; letter-spacing:5px; text-shadow: 0 2px 5px #000;">MISSION</h2>
+    <div id="hud">
+        <div id="timer-display">TIME: 00:00</div>
+        <div id="extr-display">EXTR: 0/2</div>
+        <div id="duel-display">SQUAD: 0 | GHOST: 0</div>
+        <div id="score-display">SCORE: 0</div>
+    </div>
+    <div class="grid-frame grid-3x3" id="main-grid"></div>
+    <button class="btn" onclick="abortMission()" style="width:250px;">Abort Mission</button>
+</div>
+
+<div id="search-terminal">
+    <div class="terminal-box" id="search-box">
+        <div id="terminal-target" style="font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 2px; font-weight:bold;">IDENTIFYING...</div>
+        <input type="text" id="search-input" placeholder="SEARCH ROSTER" autocomplete="off">
+        <div id="results-list"></div>
+        <div id="strike-container"></div>
+        
+        <div style="display: flex; gap: 10px; width: 100%; margin-top: 15px;">
+            <button class="btn btn-burn" onclick="executeBurn()" style="flex: 1; margin-top: 0;">Burn</button>
+            <button class="btn" onclick="closeSearch()" style="flex: 1; margin-top: 0; background: transparent; border-color: #333; color: #777;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="sharingan-terminal" style="z-index: 600;">
+    <div class="terminal-box" id="sharingan-box" style="width: 800px; max-width: 95%; background: #0a0a0f; border-color: var(--sharingan); max-height: 90vh; display: flex; flex-direction: column;">
+        <div style="position: absolute; top: 15px; right: 15px; cursor: pointer; color: #777; font-size: 1.2rem; font-weight: bold;" onclick="closeSharingan()">[X]</div>
+        <div style="color: var(--sharingan); font-size: 2rem; margin-bottom: 5px; text-shadow: 0 0 15px rgba(255,0,51,0.5); flex-shrink: 0;">👁️</div>
+        <div id="sharingan-target" style="font-size: 0.9rem; color: #ccc; text-transform: uppercase; letter-spacing: 3px; font-weight:bold; margin-bottom: 15px; flex-shrink: 0;">SHARINGAN ACTIVATED: <span id="s-coords" style="color:var(--sharingan)"></span></div>
+        <div id="sharingan-options" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 10px; overflow-y: auto; padding-right: 5px; flex-grow: 1;"></div>
+        <button class="btn" onclick="closeSharingan()" style="width: 100%; margin-top: 10px; background: transparent; border-color: #333; color: #777; flex-shrink: 0;">Deactivate Sharingan</button>
+    </div>
+</div>
+
+<script>
+    // --- STR REVERSAL LOGIC ---
+    function revStr(str) { return str.split('').reverse().join(''); }
+
+    // --- SYSTEM VARIABLES ---
+    const API_URL = "https://script.google.com/macros/s/AKfycbzQGiS9Fxsl-nIdjavVUAVNph_X0mwe7feZtAMSbRllInsnQaNhrNImiuHq6tiGGkjo/exec";
+    
+    // --- THE THREE PILLARS NAVIGATION ---
+    function showPanel(panelId) {
+        document.getElementById('pillar-menu').style.display = 'none';
+        document.getElementById('standard-ops-panel').style.display = 'none';
+        document.getElementById('squad-missions-panel').style.display = 'none';
+        document.getElementById('bounty-board-panel').style.display = 'none';
+        
+        document.getElementById(panelId).style.display = 'flex';
+    }
+
+    // --- TACTICAL CLIPBOARD BYPASS ---
+    function copyToClipboardFallback(text, onSuccess) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(onSuccess).catch(err => { executeHiddenCopy(text, onSuccess); });
+        } else { executeHiddenCopy(text, onSuccess); }
+    }
+
+    function executeHiddenCopy(text, onSuccess) {
+        try {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.opacity = "0";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            var successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            if (successful) { onSuccess(); } else { alert("Browser blocked auto-copy."); }
+        } catch (err) { alert("Browser blocked auto-copy."); }
+    }
+
+    // --- AUDIO TOGGLE LOGIC ---
+    let isMuted = false;
+    function toggleMute() {
+        isMuted = !isMuted;
+        const bgMusic = document.getElementById('lobby-music');
+        if(bgMusic) {
+            bgMusic.muted = isMuted;
+            if (!isMuted && bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("Audio play blocked."));
+            }
+        }
+        document.getElementById('audio-toggle').innerText = isMuted ? "🔇" : "🔊";
+    }
+
+    // --- COLOR ROTATION ENGINE ---
+    const originalColors = { s: '#9d4edd', a: '#ff4d4d', b: '#ffb703', c: '#00ff88' };
+    const pictureColors = { s: '#8300C7', a: '#01A50A', b: '#3657B2', c: '#F0C075' }; 
+    const weekNum = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
+    const isAlternateWeek = weekNum % 2 !== 0; 
+    const currentPalette = isAlternateWeek ? pictureColors : originalColors;
+
+    document.documentElement.style.setProperty('--accent', currentPalette.s);
+    document.documentElement.style.setProperty('--rank-a', currentPalette.a);
+    document.documentElement.style.setProperty('--rank-b', currentPalette.b);
+    document.documentElement.style.setProperty('--rank-c', currentPalette.c);
+
+    // --- SYSTEM DATA ---
+    const MISSIONS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk_vcJX4UPnF1i_cnH0BIYX7AXm3u8EwpCE8X5m_SUd8kf4kjhex39JH1kIkrf0uGg_-7UrTU8e4Xx/pub?gid=0&single=true&output=csv";
+    const ROSTER_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk_vcJX4UPnF1i_cnH0BIYX7AXm3u8EwpCE8X5m_SUd8kf4kjhex39JH1kIkrf0uGg_-7UrTU8e4Xx/pub?gid=455569491&single=true&output=csv";
+
+    let mDB = [], rDB = [], active = null, hostChallengeData = null;
+    let currentMissionName = "", filledCount = 0, currentScore = 0, startTime = 0, timerInterval = null, finalTimeString = "";
+    
+    let activeMultiplier = 1;
+    let isReverseMode = false;
+    let reverseTimeRemaining = 300; 
+    
+    // NEW: Core Gameplay Mechanics
+    let currentDifficulty = 1; 
+    let deployedOperatives = [];
+
+    let missionGridEmojis = [];
+    let isSharinganMode = false;
+
+    let isRelayMode = false;
+    let sessionExtractions = 0;
+    let relayState = { m: null, filled: {}, score: 0, timeElapsed: 0, title: "" };
+
+    let isCreatingGhost = false;
+    let isPlayingGhost = false;
+    let ghostTimestamps = {};
+    let ghostData = null; 
+    let playerClaims = 0;
+    let ghostClaims = 0;
+
+    let isGauntletMode = false;
+    let gauntletGridsCleared = 0;
+    let gauntletTimeRemaining = 180; 
+
+    // --- BOUNTY TRACKING SYSTEM ---
+    let personalBountyPoints = parseInt(localStorage.getItem('team7_bounty_points') || '0', 10);
+    let currentBountyTargetObj = null;
+    let currentBountyTarget = ""; 
+    let currentBountyClue = "";
+    let globalBountyClaimed = false; 
+    let hasSeenBountyIntel = false; 
+
+    // --- ADMIN OVERRIDE ---
+    let adminClickCount = 0;
+    let adminClickTimer = null;
+    function adminCheck() {
+        adminClickCount++;
+        clearTimeout(adminClickTimer);
+        adminClickTimer = setTimeout(() => { adminClickCount = 0; }, 1500);
+        
+        if (adminClickCount >= 3) {
+            adminClickCount = 0; 
+            let code = prompt("ENTER SECURITY CLEARANCE:");
+            if (code === "Dysh@wnClaire9424!") {
+                if (currentBountyTargetObj) {
+                    alert(`CLASSIFIED INTEL:\n\nTarget: ${currentBountyTargetObj["operative"].toUpperCase()}\nSeries: ${currentBountyTargetObj["series"].toUpperCase()}`);
+                } else {
+                    alert("Database still loading. Try again in a second.");
+                }
+            }
+        }
+    }
+
+    function toggleReverseMode() {
+        isReverseMode = !isReverseMode;
+        const btn = document.getElementById('reverse-toggle-btn');
+        const diffBtns = document.querySelectorAll('.diff-btn');
+        
+        if(isReverseMode) {
+            btn.innerText = "REVERSE MODE: ON";
+            btn.style.borderColor = "var(--accent)";
+            btn.style.color = "var(--accent)";
+            document.getElementById('reverse-intel-overlay').style.display = 'flex';
+            
+            const revColors = ['--accent', '--accent', '--rank-a', '--rank-a', '--rank-b', '--rank-b', '--rank-b', '--rank-c', '--rank-c', '--rank-c'];
+            diffBtns.forEach((b, i) => b.style.setProperty('--c', `var(${revColors[i]})`));
+        } else {
+            btn.innerText = "REVERSE MODE: OFF";
+            btn.style.borderColor = "#555";
+            btn.style.color = "#aaa";
+            
+            const normColors = ['--rank-c', '--rank-c', '--rank-c', '--rank-b', '--rank-b', '--rank-b', '--rank-a', '--rank-a', '--accent', '--accent'];
+            diffBtns.forEach((b, i) => b.style.setProperty('--c', `var(${normColors[i]})`));
+        }
+    }
+
+    function initializeBountyTarget() {
+        if(rDB.length === 0) return;
+        
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 1);
+        const days = Math.floor((now - start) / (24 * 60 * 60 * 1000));
+        const currentWeek = Math.ceil((days + 1) / 7);
+        let seed = (now.getFullYear() * 100) + currentWeek;
+        
+        let x = Math.sin(seed++) * 10000;
+        let random = x - Math.floor(x);
+        let index = Math.floor(random * rDB.length);
+        
+        currentBountyTargetObj = rDB[index];
+        currentBountyTarget = (currentBountyTargetObj["operative"] || "").toLowerCase();
+        
+        let targetSeries = (currentBountyTargetObj["series"] || "CLASSIFIED").toUpperCase();
+        currentBountyClue = `This rogue belongs to the ${targetSeries} universe.`;
+        
+        document.getElementById('bounty-img').src = getImg(currentBountyTargetObj);
+    }
+
+    async function openBountyBoard() {
+        showPanel('bounty-board-panel');
+        
+        try {
+            const res = await fetch(API_URL + "?type=hunt");
+            const data = await res.json();
+            if(data.status === "CLAIMED") {
+                globalBountyClaimed = true;
+            }
+        } catch(e) { console.log("Hunt server check offline."); }
+        
+        updateBountyUI();
+        
+        if(!hasSeenBountyIntel) {
+            document.getElementById('bounty-intel-overlay').style.display = 'flex';
+            hasSeenBountyIntel = true;
+        }
+    }
+
+    function updateBountyUI() {
+        const bar = document.getElementById('bounty-bar');
+        const text = document.getElementById('bounty-tracker-text');
+        const clueBox = document.getElementById('bounty-clue');
+        const input = document.getElementById('bounty-guess');
+        const btn = document.getElementById('bounty-submit-btn');
+        const archiveBtn = document.getElementById('view-archives-btn');
+
+        let displayPoints = Math.min(personalBountyPoints, 10000);
+        let percentage = (displayPoints / 10000) * 100;
+        
+        bar.style.width = percentage + '%';
+        text.innerText = `${displayPoints} / 10000 PTS`;
+
+        if (globalBountyClaimed) {
+            document.getElementById('bounty-lock-stamp').style.display = 'block';
+            input.style.display = 'none';
+            btn.style.display = 'none';
+            archiveBtn.style.display = 'inline-block';
+            
+            document.getElementById('bounty-img').classList.add('revealed');
+            clueBox.innerHTML = `🔒 <strong>HUNT COMPLETED.</strong><br>Check the Archives to see the reigning champion.`;
+            clueBox.style.color = "#ff0033";
+            clueBox.style.borderColor = "#ff0033";
+        } else {
+            archiveBtn.style.display = 'none';
+            input.style.display = 'block';
+            btn.style.display = 'inline-block';
+
+            if (personalBountyPoints >= 5000) {
+                clueBox.innerHTML = `🔓 <strong>DECRYPTED CLUE:</strong> ${currentBountyClue}`;
+                clueBox.style.color = "var(--bounty)";
+                clueBox.style.borderColor = "var(--bounty)";
+            }
+
+            if (personalBountyPoints >= 10000) {
+                input.placeholder = "ENTER TARGET CODENAME...";
+                input.disabled = false;
+                btn.classList.add('active');
+            }
+        }
+    }
+
+    async function showHunterArchives() {
+        document.getElementById('hunter-archives-overlay').style.display = 'flex';
+        const statusText = document.getElementById('ha-status');
+        const container = document.getElementById('ha-data');
+        statusText.innerText = "Accessing Hunter Databanks...";
+        container.innerHTML = "";
+
+        try {
+            const response = await fetch(API_URL + "?type=hunt");
+            const data = await response.json();
+            statusText.innerText = "Verified Hunter Logs";
+            
+            if(!data.archives || data.archives.length === 0) {
+                container.innerHTML = "<div style='padding:20px; color:#666;'>No Hunters on Record.</div>";
+                return;
+            }
+            
+            data.archives.forEach(entry => {
+                let date = new Date(entry.date).toLocaleDateString();
+                container.innerHTML += `
+                    <div class="lb-row" style="border-color: var(--bounty);">
+                        <span style="flex:2; font-weight:bold; color:var(--bounty);">${entry.name}</span>
+                        <span style="flex:2; font-size:0.8rem; color:#fff;">TARGET: ${entry.target}</span>
+                        <span style="flex:1; text-align:right; color:#aaa;">${date}</span>
+                    </div>`;
+            });
+        } catch(e) {
+            statusText.innerText = "Network Error. Unable to load Archives.";
+            statusText.style.color = "#ff4d4d";
+        }
+    }
+
+    function submitBountyGuess() {
+        if (personalBountyPoints < 10000 || globalBountyClaimed) return;
+        
+        const guess = document.getElementById('bounty-guess').value.trim().toLowerCase();
+        const feedback = document.getElementById('bounty-feedback');
+        
+        if (guess === "") return;
+
+        if (guess === currentBountyTarget) {
+            feedback.style.color = "#00ff88";
+            feedback.innerText = "TARGET IDENTIFIED! TRANSMITTING TO SERVER...";
+            
+            let winnerName = prompt("HUNT COMPLETE! ENTER YOUR CODENAME TO CLAIM THE REWARD:");
+            if(!winnerName) winnerName = "GHOST";
+
+            fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: winnerName, target: currentBountyTarget, points: personalBountyPoints })
+            }).then(() => {
+                globalBountyClaimed = true;
+                updateBountyUI();
+                document.getElementById('bounty-img').classList.add('revealed');
+                alert("TRANSMISSION SUCCESSFUL! Watch team7pirates on Thursday to see your name in lights.");
+            }).catch(e => {
+                feedback.style.color = "#ff0033";
+                feedback.innerText = "SERVER ERROR. RETRYING...";
+            });
+
+        } else {
+            feedback.style.color = "#ff0033";
+            feedback.innerText = "INCORRECT TARGET. TRY AGAIN.";
+            setTimeout(() => { feedback.innerText = ""; }, 3000);
+        }
+    }
+
+    // --- LOCAL AUDIO PLAYLIST LOGIC ---
+    const trackList = [
+        "music/track1.wav",
+        "music/track2.wav",
+        "music/track3.wav",
+        "music/track4.wav",
+        "music/track5.wav",
+        "music/track6.wav",
+        "music/track7.wav"
+    ];
+    let currentSongIndex = 0;
+
+    function initAudioPlaylist() {
+        const audioPlayer = document.getElementById('lobby-music');
+        if (!audioPlayer) return;
+
+        currentSongIndex = Math.floor(Math.random() * trackList.length);
+        audioPlayer.src = trackList[currentSongIndex];
+
+        audioPlayer.addEventListener('ended', () => {
+            currentSongIndex = (currentSongIndex + 1) % trackList.length;
+            audioPlayer.src = trackList[currentSongIndex];
+            if (!isMuted) {
+                audioPlayer.play().catch(e => console.log("Audio playback blocked."));
+            }
+        });
+    }
+
+    // --- CIPHER GAME LOGIC ---
+    function reviewBoard() {
+        document.getElementById('victory-overlay').style.display = 'none';
+        document.getElementById('return-debrief-btn').style.display = 'block';
+    }
+
+    function returnToDebrief() {
+        document.getElementById('return-debrief-btn').style.display = 'none';
+        document.getElementById('victory-overlay').style.display = 'flex';
+    }
+
+    function startAudioAndCloseBriefing() {
+        closeOverlay('briefing-overlay');
+        let lobbyMusic = document.getElementById('lobby-music');
+        if(lobbyMusic) {
+            lobbyMusic.volume = 0.3;
+            if(lobbyMusic.paused && !isMuted) {
+                let playPromise = lobbyMusic.play();
+                if(playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.log("Audio required manual play due to browser limits.");
+                    });
+                }
+            }
+        }
+    }
+
+    function parseCSV(s){const a=[];let q=false;for(let r=l=c=0;c<s.length;c++){let cc=s[c],nc=s[c+1];a[r]=a[r]||[];a[r][l]=a[r][l]||'';if(cc=='"'&&q&&nc=='"'){a[r][l]+=cc;++c;continue}if(cc=='"'){q=!q;continue}if(cc==','&&!q){++l;continue}if((cc=='\n'||cc=='\r')&&!q){if(cc=='\r'&&nc=='\n')++c;++r;l=0;continue}a[r][l]+=cc}return a}
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    async function init(){
+        initAudioPlaylist();
+        showPanel('pillar-menu'); 
+
+        const r1=await fetch(MISSIONS_URL); const t1=await r1.text(); const d1=parseCSV(t1);
+        const h1=d1[0].map(h=>h.trim().toLowerCase());
+        mDB=d1.slice(1).map(row=>h1.reduce((o,h,i)=>{o[h]=row[i]?row[i].trim():"";return o},{}));
+        
+        const r2=await fetch(ROSTER_URL); const t2=await r2.text(); const d2=parseCSV(t2);
+        const h2=d2[0].map(h=>h.trim().toLowerCase());
+        rDB=d2.slice(1).map(row=>h2.reduce((o,h,i)=>{o[h]=row[i]?row[i].trim():"";return o},{}));
+
+        if(mDB.length > 0) {
+            const hostMissions = mDB.filter(m => (m["mission title"] || "").toLowerCase().includes("host") || (m["rank"] || "").toLowerCase().includes("host"));
+            hostChallengeData = hostMissions.length > 0 ? hostMissions[hostMissions.length - 1] : mDB[mDB.length - 1];
+            document.getElementById('host-sub').innerText = hostChallengeData["mission title"] || "Classified Operation";
+        }
+        
+        initializeBountyTarget();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const incomingRelay = urlParams.get('relay');
+        const incomingGhost = urlParams.get('duel');
+
+        if(incomingRelay && rDB.length > 0) {
+            try {
+                let parsed = JSON.parse(decodeURIComponent(atob(incomingRelay)));
+                resumeRelay(parsed);
+            } catch(e) { console.error("Corrupted Relay Intel", e); }
+        } else if (incomingGhost && rDB.length > 0) {
+            try {
+                let parsed = JSON.parse(decodeURIComponent(atob(incomingGhost)));
+                startGhostDuel(parsed);
+            } catch(e) { console.error("Corrupted Ghost Intel", e); }
+        }
+    }
+
+    function getImg(c) {
+        let u = c["image url"] || c["url"] || "";
+        if (!u) return "";
+        if (u.includes("drive.google.com")) {
+            let id = "";
+            if (u.includes("id=")) { id = u.split("id=")[1].split("&")[0]; } 
+            else if (u.includes("/d/")) { id = u.split("/d/")[1].split("/")[0]; }
+            return "https://lh3.googleusercontent.com/d/" + id;
+        }
+        return u;
+    }
+
+    function startGhostCreation() {
+        isGauntletMode = false;
+        isReverseMode = false;
+        isCreatingGhost = true;
+        ghostTimestamps = {};
+        autoGenerate(6, false, false, true); 
+    }
+
+    function startGhostDuel(parsedData) {
+        isGauntletMode = false;
+        isReverseMode = false;
+        document.getElementById('briefing-overlay').style.display = 'none'; 
+        isPlayingGhost = true;
+        ghostData = parsedData;
+        playerClaims = 0;
+        ghostClaims = 0;
+        currentDifficulty = 1; 
+
+        document.getElementById('duel-display').style.display = 'block';
+        document.getElementById('duel-display').innerText = `SQUAD: 0 | GHOST: 0`;
+        document.getElementById('score-display').style.display = 'none'; 
+
+        const color = '#e63946'; 
+        document.getElementById('hq-lobby').style.display = 'none';
+        document.body.style.backgroundColor = color;
+        const th = document.getElementById('game-theater'); th.style.display = 'flex';
+        th.style.background = `radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%)`;
+        
+        currentMissionName = ghostData.title;
+        document.getElementById('op-title').innerText = currentMissionName;
+        document.getElementById('op-title').style.color = color;
+        
+        startTime = Date.now();
+        missionGridEmojis = Array(9).fill('⬛'); 
+        deployedOperatives = [];
+        renderGrid(ghostData.m, color, 3);
+
+        timerInterval = setInterval(() => {
+            const el = Math.floor((Date.now() - startTime) / 1000);
+            const m = String(Math.floor(el / 60)).padStart(2, '0');
+            const s = String(el % 60).padStart(2, '0');
+            document.getElementById('timer-display').innerText = `TIME: ${m}:${s}`;
+
+            for(let idx in ghostData.timestamps) {
+                if(ghostData.timestamps[idx] <= el && !document.querySelectorAll('.play-node')[idx].classList.contains('locked')) {
+                    claimCellForGhost(idx);
+                }
+            }
+        }, 1000);
+    }
+
+    function claimCellForGhost(idx) {
+        const cell = document.querySelectorAll('.play-node')[idx];
+        missionGridEmojis[idx] = '💀';
+        
+        cell.innerHTML = `
+            <div style="width:100%; height:100%; background: #1a0a0a; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <span style="font-size:3rem; text-shadow: 0 0 15px var(--ghost);">💀</span>
+                <span style="color:var(--ghost); font-weight:900; letter-spacing:2px; font-size:0.8rem; margin-top:5px;">GHOST CLAIMED</span>
+            </div>`;
+        
+        cell.classList.add('locked', 'ghost-locked');
+        
+        ghostClaims++;
+        filledCount++;
+        document.getElementById('duel-display').innerText = `SQUAD: ${playerClaims} | GHOST: ${ghostClaims}`;
+        
+        checkDuelStatus();
+    }
+
+    function checkDuelStatus() {
+        if(playerClaims >= 5 || ghostClaims >= 5 || filledCount >= 9) {
+            triggerVictory();
+        }
+    }
+
+    function generateGhostLink() {
+        const btn = document.getElementById('ghost-copy-btn');
+        btn.innerText = "ENCODING INTEL...";
+        
+        let payload = {
+            m: relayState.m, 
+            title: currentMissionName,
+            timestamps: ghostTimestamps
+        };
+        
+        let encoded = btoa(encodeURIComponent(JSON.stringify(payload)));
+        let link = window.location.origin + window.location.pathname + "?duel=" + encoded;
+        
+        copyToClipboardFallback(link, () => {
+            btn.innerText = "LINK COPIED TO CLIPBOARD!";
+            btn.style.backgroundColor = "var(--ghost)";
+            btn.style.color = "#000";
+            setTimeout(() => {
+                btn.innerText = "ENCODE DUEL LINK";
+                btn.style.backgroundColor = "#000";
+                btn.style.color = "var(--ghost)";
+            }, 3000);
+        });
+    }
+
+    function startNewRelay() {
+        isGauntletMode = false;
+        isReverseMode = false;
+        isRelayMode = true;
+        sessionExtractions = 0;
+        relayState = { m: null, filled: {}, score: 0, timeElapsed: 0, title: "[RELAY] SQUAD OPERATION" };
+        document.getElementById('extr-display').style.display = 'block';
+        
+        const daysSinceEpoch = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+        const dailyDifficulty = (daysSinceEpoch % 10) + 1;
+        
+        autoGenerate(dailyDifficulty, false, true); 
+    }
+
+    function resumeRelay(parsedData) {
+        isGauntletMode = false;
+        isReverseMode = false;
+        document.getElementById('briefing-overlay').style.display = 'none'; 
+        
+        isRelayMode = true;
+        sessionExtractions = 0;
+        relayState = parsedData;
+        
+        currentScore = relayState.score;
+        filledCount = Object.keys(relayState.filled).length;
+
+        const color = '#ffaa00'; 
+        launch(relayState.m, color, false, 3, 1);
+        
+        currentMissionName = relayState.title;
+        document.getElementById('op-title').innerText = currentMissionName;
+        
+        document.getElementById('extr-display').innerText = `EXTR: 0/2`;
+        document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+
+        startTime = Date.now() - (relayState.timeElapsed * 1000);
+        missionGridEmojis = Array(9).fill('⬛'); 
+
+        const cells = document.querySelectorAll('.play-node');
+        for(let idx in relayState.filled) {
+            let data = relayState.filled[idx];
+            let cell = cells[idx];
+            missionGridEmojis[idx] = data.emoji;
+
+            deployedOperatives.push(data.name.toLowerCase());
+
+            if(data.isBurn) {
+                cell.innerHTML = `
+                    <div style="position:relative; width:100%; height:100%;">
+                        ${data.img ? `<img src="${data.img}" style="width:100%; height:100%; object-fit:cover; filter: grayscale(100%) contrast(1.2) sepia(1) hue-rotate(-50deg) saturate(4) brightness(0.5);">` : `<div style="width:100%; height:100%; background:#1a0a0a;"></div>`}
+                        <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: repeating-linear-gradient(45deg, rgba(255,85,0,0.15), rgba(255,85,0,0.15) 10px, transparent 10px, transparent 20px); z-index:2;"></div>
+                        <div style="position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); z-index:3; font-size:3rem; opacity:0.9; text-shadow: 0 0 15px #ff5500;">🔥</div>
+                        <div class="filled-info" style="z-index:4; background: linear-gradient(transparent, rgba(30,0,0,0.95)); padding-bottom: 10px;">
+                            <div class="filled-name" style="color:#ffccaa; text-decoration: line-through; text-decoration-color: #ff5500; font-size:0.9rem;">${data.name}</div>
+                            <div class="filled-rank" style="color:var(--burn);">BURNED</div>
+                        </div>
+                    </div>`;
+                cell.style.borderColor = 'var(--burn)';
+            } else {
+                cell.innerHTML = `
+                    <img src="${data.img}" class="cell-portrait">
+                    <div class="filled-info">
+                        <div class="filled-name">${data.name}</div>
+                        <div class="filled-rank" style="color:${color}">${data.rankTitle}</div>
+                    </div>`;
+                cell.style.borderColor = color; 
+            }
+            cell.classList.add('locked');
+        }
+
+        timerInterval = setInterval(() => {
+            const el = Math.floor((Date.now() - startTime) / 1000);
+            const m = String(Math.floor(el / 60)).padStart(2, '0');
+            const s = String(el % 60).padStart(2, '0');
+            document.getElementById('timer-display').innerText = `TIME: ${m}:${s}`;
+        }, 1000);
+    }
+
+    function triggerRelayHandoff() {
+        clearInterval(timerInterval);
+        relayState.timeElapsed = Math.floor((Date.now() - startTime) / 1000);
+        relayState.score = currentScore;
+        document.getElementById('relay-overlay').style.display = 'flex';
+    }
+
+    function generateRelayLink() {
+        const btn = document.getElementById('relay-copy-btn');
+        btn.innerText = "ENCODING INTEL...";
+        
+        let payload = btoa(encodeURIComponent(JSON.stringify(relayState)));
+        let link = window.location.origin + window.location.pathname + "?relay=" + payload;
+        
+        copyToClipboardFallback(link, () => {
+            btn.innerText = "LINK COPIED TO CLIPBOARD!";
+            btn.style.backgroundColor = "var(--relay)";
+            btn.style.color = "#000";
+            setTimeout(() => {
+                btn.innerText = "COPY HANDOFF LINK";
+                btn.style.backgroundColor = "#000";
+                btn.style.color = "var(--relay)";
+            }, 3000);
+        });
+    }
+
+    function launchSharingan() {
+        isGauntletMode = false;
+        isReverseMode = false;
+        isSharinganMode = true;
+        isRelayMode = false;
+        autoGenerate(2, true); 
+    }
+
+    // --- THE GAUNTLET CORE LOOP ---
+    function startGauntlet() {
+        isGauntletMode = true;
+        isReverseMode = false;
+        activeMultiplier = 1;
+        gauntletGridsCleared = 0;
+        gauntletTimeRemaining = 180; 
+        currentDifficulty = 1; 
+        
+        document.getElementById('score-display').innerText = `GRIDS CLEARED: 0`;
+        document.getElementById('score-display').style.color = "var(--gauntlet)";
+        document.getElementById('timer-display').style.color = "var(--gauntlet)";
+        
+        generateGauntletGrid();
+    }
+
+    function generateGauntletGrid() {
+        let size = gauntletGridsCleared < 3 ? 2 : 3;
+
+        let allSeries = [...new Set(rDB.map(c => c["series"]).filter(s => s))];
+        let allTags = [];
+        rDB.forEach(c => { if(c["tags"]) { c["tags"].split(',').forEach(t => { let trimmed = t.trim(); if(trimmed) allTags.push(trimmed); }); } });
+        allTags = [...new Set(allTags)];
+        
+        let grid = null;
+        for(let attempts = 0; attempts < 1500; attempts++) {
+            let rRows = shuffle([...allSeries]).slice(0, size);
+            let rCols = shuffle([...allTags]).slice(0, size);
+            
+            let valid = true;
+            for(let r of rRows) {
+                for(let c of rCols) {
+                    let matches = rDB.filter(char => {
+                        let cSeries = (char["series"]||"").toLowerCase();
+                        let cTags = (char["tags"]||"").toLowerCase();
+                        return (cSeries === r.toLowerCase() || cTags.includes(r.toLowerCase())) &&
+                               (cSeries === c.toLowerCase() || cTags.includes(c.toLowerCase()));
+                    });
+                    if(matches.length < 1) { valid = false; break; }
+                }
+                if(!valid) break;
+            }
+            if(valid) { grid = { rows: rRows, cols: rCols }; break; }
+        }
+
+        if(!grid) { alert("Gauntlet database error. Please refresh the page."); return; }
+
+        let autoMission = {
+            "mission title": size === 2 ? "THE GAUNTLET (PHASE 1: 2x2)" : "THE GAUNTLET (PHASE 2: 3x3)",
+            "r1": grid.rows[0], "r2": grid.rows[1], "r3": grid.rows[2] || undefined,
+            "c1": grid.cols[0], "c2": grid.cols[1], "c3": grid.cols[2] || undefined
+        };
+
+        if(gauntletGridsCleared === 0) {
+            launch(autoMission, 'var(--gauntlet)', false, size, 1);
+        } else {
+            filledCount = 0;
+            missionGridEmojis = Array(size * size).fill('⬛'); 
+            document.getElementById('op-title').innerText = autoMission["mission title"];
+            renderGrid(autoMission, 'var(--gauntlet)', size);
+        }
+    }
+
+    function animateTimer(type) {
+        const t = document.getElementById('timer-display');
+        t.style.animation = 'none';
+        void t.offsetWidth; // trigger reflow
+        t.style.animation = `${type} 0.5s ease`;
+    }
+
+    // --- GENERAL GENERATOR ---
+    function autoGenerate(level, sharingan = false, isRelayStart = false, isGhostStart = false) {
+        isGauntletMode = false;
+        isSharinganMode = sharingan;
+        document.getElementById('loading-overlay').style.display = 'flex';
+        
+        setTimeout(() => {
+            let allSeries = [...new Set(rDB.map(c => c["series"]).filter(s => s))];
+            let allTags = [];
+            rDB.forEach(c => {
+                if(c["tags"]) {
+                    c["tags"].split(',').forEach(t => {
+                        let trimmed = t.trim();
+                        if(trimmed) allTags.push(trimmed);
+                    });
+                }
+            });
+            allTags = [...new Set(allTags)];
+            
+            let minValid = 1, maxValid = 999;
+            
+            let mathLevel = level;
+            if (isReverseMode && !sharingan) {
+                mathLevel = 11 - level; 
+            }
+
+            currentDifficulty = mathLevel;
+
+            if (mathLevel <= 3) { minValid = 3; maxValid = 999; } 
+            else if (mathLevel <= 6) { minValid = 2; maxValid = 15; } 
+            else if (mathLevel <= 8) { minValid = 1; maxValid = 6; } 
+            else if (mathLevel === 9 || mathLevel === 10) { minValid = 1; maxValid = 2; } 
+            
+            let grid = null;
+            
+            for(let attempts = 0; attempts < 2500; attempts++) {
+                let rRows = shuffle([...allSeries]).slice(0, 3);
+                let rCols = shuffle([...allTags]).slice(0, 3);
+                
+                let valid = true;
+                for(let r of rRows) {
+                    for(let c of rCols) {
+                        let matches = rDB.filter(char => {
+                            let cSeries = (char["series"]||"").toLowerCase();
+                            let cTags = (char["tags"]||"").toLowerCase();
+                            return (cSeries === r.toLowerCase() || cTags.includes(r.toLowerCase())) &&
+                                   (cSeries === c.toLowerCase() || cTags.includes(c.toLowerCase()));
+                        });
+                        if(matches.length < minValid || matches.length > maxValid) {
+                            valid = false; break;
+                        }
+                    }
+                    if(!valid) break;
+                }
+                if(valid) { grid = { rows: rRows, cols: rCols }; break; }
+            }
+            
+            if(!grid) {
+                for(let attempts = 0; attempts < 2500; attempts++) {
+                    let rRows = shuffle([...allSeries]).slice(0, 3);
+                    let rCols = shuffle([...allTags]).slice(0, 3);
+                    let valid = true;
+                    for(let r of rRows) {
+                        for(let c of rCols) {
+                            let matches = rDB.filter(char => {
+                                let cSeries = (char["series"]||"").toLowerCase();
+                                let cTags = (char["tags"]||"").toLowerCase();
+                                return (cSeries === r.toLowerCase() || cTags.includes(r.toLowerCase())) &&
+                                       (cSeries === c.toLowerCase() || cTags.includes(c.toLowerCase()));
+                            });
+                            if(matches.length < 1) { valid = false; break; }
+                        }
+                        if(!valid) break;
+                    }
+                    if(valid) { grid = { rows: rRows, cols: rCols }; break; }
+                }
+            }
+            
+            document.getElementById('loading-overlay').style.display = 'none';
+            
+            if(!grid) { alert("Database too small to generate this difficulty."); return; }
+            
+            const colorMap = {1:'--rank-c', 2:'--rank-c', 3:'--rank-c', 4:'--rank-b', 5:'--rank-b', 6:'--rank-b', 7:'--rank-a', 8:'--rank-a', 9:'--accent', 10:'--accent'};
+            const varName = colorMap[mathLevel];
+            let finalColor = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+            
+            let multiplier = 1;
+            if (mathLevel >= 4 && mathLevel <= 6) multiplier = 2;
+            if (mathLevel >= 7 && mathLevel <= 8) multiplier = 3;
+            if (mathLevel >= 9 && mathLevel <= 10) multiplier = 4;
+
+            if (isReverseMode && !sharingan) {
+                multiplier *= 7; 
+            }
+
+            let multText = multiplier > 1 ? ` (${multiplier}x MULTIPLIER)` : "";
+            let finalTitle = `LEVEL ${level} OPERATION` + multText;
+            if(isReverseMode) finalTitle = `[REVERSE] LEVEL ${level} OP` + multText;
+
+            if(sharingan) { finalColor = '#ff0033'; finalTitle = `[TRAINING] SHARINGAN MODE`; multiplier = 1; }
+            if(isRelayStart) { finalColor = '#ffaa00'; finalTitle = `[RELAY] SQUAD OPERATION`; }
+            if(isGhostStart) { finalColor = '#e63946'; finalTitle = `[GHOST RECORD] LVL ${level}`; }
+            
+            let autoMission = {
+                "mission title": finalTitle,
+                "r1": grid.rows[0], "r2": grid.rows[1], "r3": grid.rows[2],
+                "c1": grid.cols[0], "c2": grid.cols[1], "c3": grid.cols[2]
+            };
+
+            if(isRelayStart) relayState.m = autoMission;
+            if(isGhostStart) relayState.m = autoMission; 
+            
+            launch(autoMission, finalColor, false, 3, multiplier);
+        }, 50);
+    }
+
+    function launchHostChallenge() {
+        if(!hostChallengeData) return;
+        isGauntletMode = false;
+        isSharinganMode = false;
+        isRelayMode = false;
+        isCreatingGhost = false;
+        isReverseMode = false;
+        currentDifficulty = 1; 
+
+        const color = '#ff3366'; 
+        currentMissionName = "[HOST] " + (hostChallengeData["mission title"] || "Classified");
+        document.getElementById('op-title').innerText = "HOST CHALLENGE";
+        launch(hostChallengeData, color, true, 3, 1);
+    }
+
+    function launch(m, color, isHost = false, size = 3, mult = 1){
+        activeMultiplier = mult;
+        
+        document.getElementById('hq-lobby').style.display = 'none';
+        document.body.style.backgroundColor = color;
+        const th = document.getElementById('game-theater'); th.style.display = 'flex';
+        th.style.background = `radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 100%)`;
+        
+        if(!isHost && !isGauntletMode) {
+            currentMissionName = m["mission title"] || "Op: Classified";
+            document.getElementById('op-title').innerText = currentMissionName;
+        } else if (isGauntletMode) {
+            currentMissionName = m["mission title"];
+            document.getElementById('op-title').innerText = currentMissionName;
+        }
+        
+        if (!isGauntletMode && !isReverseMode) {
+            document.getElementById('timer-display').style.color = "#fff";
+        } else if (isReverseMode) {
+            document.getElementById('timer-display').style.color = "var(--accent)";
+        }
+        
+        document.getElementById('op-title').style.color = '#fff';
+        document.getElementById('score-display').style.color = color;
+        
+        document.getElementById('extr-display').style.display = isRelayMode ? 'block' : 'none';
+        document.getElementById('duel-display').style.display = isPlayingGhost ? 'block' : 'none';
+        
+        startMissionTimer();
+        renderGrid(m, color, size);
+    }
+
+    function renderGrid(m, color, size = 3){
+        const g = document.getElementById('main-grid'); g.innerHTML = "";
+        
+        if(size === 2) {
+            g.classList.remove('grid-3x3');
+            g.classList.add('grid-2x2');
+        } else {
+            g.classList.remove('grid-2x2');
+            g.classList.add('grid-3x3');
+        }
+
+        const rL = size === 3 ? [m["r1"], m["r2"], m["r3"]] : [m["r1"], m["r2"]];
+        const cL = size === 3 ? [m["c1"], m["c2"], m["c3"]] : [m["c1"], m["c2"]];
+        
+        g.appendChild(document.createElement('div'));
+        cL.forEach(c => { 
+            const d = document.createElement('div'); 
+            d.className = 'node header-node'; 
+            d.style.color = color; 
+            d.innerText = isReverseMode ? revStr(c) : c; 
+            g.appendChild(d); 
+        });
+        
+        rL.forEach((r, rIdx) => {
+            const d = document.createElement('div'); 
+            d.className = 'node header-node'; 
+            d.style.color = color; 
+            d.innerText = isReverseMode ? revStr(r) : r; 
+            g.appendChild(d);
+            for(let i=0; i<size; i++) {
+                const cell = document.createElement('div'); cell.className = 'node play-node';
+                let cellIndex = (rIdx * size) + i; 
+                cell.onclick = () => { 
+                    if(!cell.classList.contains('locked')) {
+                        if(isSharinganMode) {
+                            openSharinganSearch(cell, r, cL[i], color, cellIndex);
+                        } else {
+                            openSearch(cell, r, cL[i], color, cellIndex, size); 
+                        }
+                    }
+                }; 
+                g.appendChild(cell);
+            }
+        });
+    }
+
+    function openSharinganSearch(cell, row, col, color, cellIndex) {
+        active = { cell: cell, row: row, col: col, color: color, index: cellIndex, size: 3 };
+        document.getElementById('s-coords').innerText = `${row.toUpperCase()} x ${col.toUpperCase()}`;
+        
+        let valids = rDB.filter(char => {
+            let cSeries = (char["series"]||"").toLowerCase();
+            let cTags = (char["tags"]||"").toLowerCase();
+            return (cSeries === row.toLowerCase() || cTags.includes(row.toLowerCase())) &&
+                   (cSeries === col.toLowerCase() || cTags.includes(col.toLowerCase()));
+        });
+
+        let invalids = rDB.filter(char => !valids.includes(char));
+
+        valids = shuffle(valids);
+        invalids = shuffle(invalids);
+
+        let numValids = Math.min(3, Math.max(2, valids.length)); 
+        let options = valids.slice(0, numValids).concat(invalids.slice(0, 6 - numValids));
+        options = shuffle(options);
+
+        const container = document.getElementById('sharingan-options');
+        container.innerHTML = "";
+
+        options.forEach(char => {
+            const item = document.createElement('div');
+            item.style.cssText = `background: #14141a; border: 2px solid #222; padding: 10px; cursor: pointer; border-radius: 6px; display: flex; flex-direction: column; align-items: center; transition: 0.2s;`;
+            item.onmouseover = () => { item.style.borderColor = color; item.style.transform = 'scale(1.05)'; item.style.boxShadow = `0 0 15px ${color}66`; };
+            item.onmouseout = () => { item.style.borderColor = '#222'; item.style.transform = 'scale(1)'; item.style.boxShadow = 'none'; };
+            item.onclick = () => { selectSharinganOption(char); };
+
+            let imgUrl = getImg(char) || "https://via.placeholder.com/80/000000/FFFFFF?text=?";
+            
+            item.innerHTML = `
+                <img src="${imgUrl}" style="width: 65px; height: 65px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; border: 2px solid #000; box-shadow: 0 0 10px rgba(0,0,0,0.8);">
+                <span style="font-weight: 900; color: #fff; font-size: 0.9rem; text-align: center; margin-bottom: 3px; line-height: 1.1;">${char["operative"]}</span>
+                <span style="color: ${color}; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; text-align: center; line-height: 1.1;">${char["series"] || "CLASSIFIED"}</span>
+            `;
+            container.appendChild(item);
+        });
+
+        document.getElementById('sharingan-terminal').style.display = 'flex';
+    }
+
+    function selectSharinganOption(char) { document.getElementById('sharingan-terminal').style.display = 'none'; validate(char); }
+    function closeSharingan() { document.getElementById('sharingan-terminal').style.display = 'none'; }
+
+    function openSearch(cell, row, col, color, cellIndex, size){
+        active = { cell: cell, row: row, col: col, color: color, index: cellIndex, size: size };
+        
+        let dispRow = isReverseMode ? revStr(row) : row;
+        let dispCol = isReverseMode ? revStr(col) : col;
+        
+        document.getElementById('terminal-target').innerText = `${dispRow.toUpperCase()} x ${dispCol.toUpperCase()}`;
+        document.getElementById('search-box').style.borderColor = color;
+        document.getElementById('search-input').value = ""; document.getElementById('results-list').innerHTML = "";
+        document.getElementById('strike-container').innerHTML = "";
+        document.getElementById('search-terminal').style.display = 'flex';
+        document.getElementById('search-input').focus();
+    }
+
+    document.getElementById('search-input').oninput = function(){
+        const v = this.value.toLowerCase(); const res = document.getElementById('results-list'); res.innerHTML = "";
+        if(v.length < 1) return;
+        rDB.filter(c => c["operative"] && c["operative"].toLowerCase().includes(v)).forEach(char => {
+            const item = document.createElement('div'); item.className = 'result-item';
+            
+            let dispName = isReverseMode ? revStr(char["operative"]) : char["operative"];
+            let dispSeries = char["series"] || "";
+            if (isReverseMode) dispSeries = revStr(dispSeries);
+
+            item.innerHTML = `
+                <img src="${getImg(char)}" class="result-thumb">
+                <div class="result-meta">
+                    <span style="font-weight:900; color:#fff; font-size:1.1rem;">${dispName}</span>
+                    <span style="color:${active.color}; font-size:0.75rem; font-weight:bold; text-transform:uppercase;">${dispSeries}</span>
+                </div>`;
+            item.onclick = () => validate(char); res.appendChild(item);
+        });
+    };
+
+    function processRelayStep() {
+        if(!isRelayMode) return;
+        sessionExtractions++;
+        document.getElementById('extr-display').innerText = `EXTR: ${sessionExtractions}/2`;
+        if(sessionExtractions >= 2 && filledCount < 9) { setTimeout(triggerRelayHandoff, 500); }
+    }
+
+    function validate(c){
+        const intel = (c["operative"] + " " + (c["series"]||"") + " " + (c["tags"]||"")).toLowerCase();
+        const opName = c["operative"].toLowerCase();
+        let dispName = isReverseMode ? revStr(c["operative"]) : c["operative"];
+
+        if(intel.includes(active.row.toLowerCase()) && active.col && intel.includes(active.col.toLowerCase())){
+            
+            // --- THE DUPLICATE CHARACTER BLACKLIST ---
+            if (currentDifficulty >= 7 && deployedOperatives.includes(opName)) {
+                let penalty = 25 * activeMultiplier;
+                currentScore -= penalty;
+                document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+                
+                if (isGauntletMode) { gauntletTimeRemaining -= 5; animateTimer('timeSub'); }
+                else if (isReverseMode) { reverseTimeRemaining -= 5; animateTimer('timeSub'); }
+                
+                const s = document.createElement('div'); 
+                s.style.color = '#ffaa00'; 
+                s.style.fontWeight = 'bold';
+                s.style.marginTop = '10px';
+                s.innerText = "OPERATIVE ALREADY DEPLOYED IN THIS GRID (-" + penalty + " PTS)";
+                document.getElementById('strike-container').appendChild(s);
+                document.getElementById('search-input').value = "";
+                return; // Stop validation, character is rejected.
+            }
+            
+            const tags = (c["tags"] || "").split(',').length + 1;
+            const rankData = getRankData(tags);
+            
+            missionGridEmojis[active.index] = rankData.emoji;
+            deployedOperatives.push(opName); // Add to memory bank
+
+            active.cell.innerHTML = `
+                <img src="${getImg(c)}" class="cell-portrait">
+                <div class="filled-info">
+                    <div class="filled-name">${dispName}</div>
+                    <div class="filled-rank" style="color:${active.color}">${rankData.title}</div>
+                </div>`;
+            active.cell.style.borderColor = active.color; 
+            active.cell.classList.add('locked'); 
+            
+            filledCount++;
+            closeSearch();
+
+            if (isGauntletMode) {
+                let size = gauntletGridsCleared < 3 ? 2 : 3;
+                let timeReward = size === 2 ? 15 : 35;
+
+                if(filledCount === size * size) {
+                    gauntletGridsCleared++;
+                    gauntletTimeRemaining += timeReward;
+                    animateTimer('timeAdd');
+                    document.getElementById('score-display').innerText = `GRIDS CLEARED: ${gauntletGridsCleared}`;
+                    setTimeout(generateGauntletGrid, 300);
+                }
+                return;
+            }
+
+            if(isCreatingGhost) {
+                let el = Math.floor((Date.now() - startTime) / 1000);
+                ghostTimestamps[active.index] = el;
+            }
+
+            if(isPlayingGhost) {
+                playerClaims++;
+                document.getElementById('duel-display').innerText = `SQUAD: ${playerClaims} | GHOST: ${ghostClaims}`;
+            }
+
+            if(isRelayMode) {
+                relayState.filled[active.index] = { name: c["operative"], rankTitle: rankData.title, pts: rankData.pts, emoji: rankData.emoji, img: getImg(c), isBurn: false };
+            }
+
+            currentScore += (rankData.pts * activeMultiplier);
+            document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+            
+            processRelayStep();
+
+            if(isPlayingGhost) checkDuelStatus();
+            else if(filledCount === 9) triggerVictory();
+
+        } else {
+            if (isGauntletMode) {
+                gauntletTimeRemaining -= 5;
+                animateTimer('timeSub');
+                document.getElementById('search-input').value = "";
+            } else if (isReverseMode) {
+                reverseTimeRemaining -= 5;
+                animateTimer('timeSub');
+                currentScore -= (5 * activeMultiplier);
+                document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+                const s = document.createElement('span'); s.className = 'strike-name'; s.innerText = dispName;
+                document.getElementById('strike-container').appendChild(s);
+                document.getElementById('search-input').value = "";
+            } else {
+                currentScore -= (5 * activeMultiplier);
+                document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+                
+                if(!isSharinganMode) {
+                    const s = document.createElement('span'); s.className = 'strike-name'; s.innerText = c["operative"];
+                    document.getElementById('strike-container').appendChild(s);
+                    document.getElementById('search-input').value = "";
+                } else {
+                    alert("STRIKE! That operative does not fit the parameters.");
+                }
+            }
+        }
+    }
+
+    function executeBurn() {
+        if(!active) return;
+        
+        let matches = rDB.filter(char => {
+            let cSeries = (char["series"]||"").toLowerCase();
+            let cTags = (char["tags"]||"").toLowerCase();
+            return (cSeries === active.row.toLowerCase() || cTags.includes(active.row.toLowerCase())) &&
+                   (cSeries === active.col.toLowerCase() || cTags.includes(active.col.toLowerCase()));
+        });
+        
+        let charToReveal = matches.length > 0 ? matches[0] : { operative: "CLASSIFIED", "image url": "" };
+        let imgUrl = getImg(charToReveal);
+
+        missionGridEmojis[active.index] = '🔥';
+        deployedOperatives.push(charToReveal.operative.toLowerCase()); // Add burned char to memory
+
+        let dispName = isReverseMode ? revStr(charToReveal.operative) : charToReveal.operative;
+
+        active.cell.innerHTML = `
+            <div style="position:relative; width:100%; height:100%;">
+                ${imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover; filter: grayscale(100%) contrast(1.2) sepia(1) hue-rotate(-50deg) saturate(4) brightness(0.5);">` : `<div style="width:100%; height:100%; background:#1a0a0a;"></div>`}
+                <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: repeating-linear-gradient(45deg, rgba(255,85,0,0.15), rgba(255,85,0,0.15) 10px, transparent 10px, transparent 20px); z-index:2;"></div>
+                <div style="position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); z-index:3; font-size:3rem; opacity:0.9; text-shadow: 0 0 15px #ff5500;">🔥</div>
+                <div class="filled-info" style="z-index:4; background: linear-gradient(transparent, rgba(30,0,0,0.95)); padding-bottom: 10px;">
+                    <div class="filled-name" style="color:#ffccaa; text-decoration: line-through; text-decoration-color: #ff5500; font-size:0.9rem;">${dispName}</div>
+                    <div class="filled-rank" style="color:var(--burn);">BURNED</div>
+                </div>
+            </div>`;
+        
+        active.cell.style.borderColor = 'var(--burn)'; 
+        active.cell.classList.add('locked'); 
+        
+        filledCount++;
+        closeSearch();
+
+        if (isGauntletMode) {
+            let size = gauntletGridsCleared < 3 ? 2 : 3;
+            let timeReward = size === 2 ? 15 : 35;
+
+            gauntletTimeRemaining -= 15;
+            animateTimer('timeSub');
+
+            if(filledCount === size * size) {
+                gauntletGridsCleared++;
+                gauntletTimeRemaining += timeReward;
+                animateTimer('timeAdd');
+                document.getElementById('score-display').innerText = `GRIDS CLEARED: ${gauntletGridsCleared}`;
+                setTimeout(generateGauntletGrid, 300);
+            }
+            return;
+        }
+
+        if (isReverseMode) {
+            reverseTimeRemaining -= 60;
+            animateTimer('timeSub');
+        }
+
+        if(isCreatingGhost) {
+            let el = Math.floor((Date.now() - startTime) / 1000);
+            ghostTimestamps[active.index] = el;
+        }
+
+        if(isPlayingGhost) {
+            playerClaims++;
+            document.getElementById('duel-display').innerText = `SQUAD: ${playerClaims} | GHOST: ${ghostClaims}`;
+        }
+
+        if(isRelayMode) {
+            relayState.filled[active.index] = { name: charToReveal.operative, rankTitle: "BURNED", pts: -15, emoji: '🔥', img: imgUrl, isBurn: true };
+        }
+
+        currentScore -= (15 * activeMultiplier);
+        document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+        
+        processRelayStep();
+
+        if(isPlayingGhost) checkDuelStatus();
+        else if(filledCount === 9) triggerVictory();
+    }
+
+    function getRankData(n){
+        if(n<=6) return {title: "LEGENDARY SANNIN", pts: 100, emoji: "🟪"}; 
+        if(n<=11) return {title: "KAGE", pts: 80, emoji: "🟥"}; 
+        if(n<=16) return {title: "ANBU", pts: 60, emoji: "🟨"};
+        if(n<=22) return {title: "JONIN", pts: 40, emoji: "🟩"}; 
+        if(n<=28) return {title: "CHUNIN", pts: 20, emoji: "🟦"}; 
+        return {title: "GENIN", pts: 10, emoji: "⬜"};
+    }
+
+    function startMissionTimer() {
+        startTime = Date.now();
+        filledCount = 0; currentScore = 0;
+        missionGridEmojis = Array(isGauntletMode ? 4 : 9).fill('⬛'); 
+        reverseTimeRemaining = 300; 
+        deployedOperatives = []; // Wipes the memory bank
+        
+        if(!isPlayingGhost && !isGauntletMode) document.getElementById('score-display').innerText = `SCORE: ${currentScore}`;
+        
+        timerInterval = setInterval(() => {
+            if (isGauntletMode) {
+                gauntletTimeRemaining--;
+                if (gauntletTimeRemaining <= 0) {
+                    gauntletTimeRemaining = 0;
+                    triggerVictory();
+                }
+                const m = String(Math.floor(gauntletTimeRemaining / 60)).padStart(2, '0');
+                const s = String(gauntletTimeRemaining % 60).padStart(2, '0');
+                document.getElementById('timer-display').innerText = `TIME: ${m}:${s}`;
+            } else if (isReverseMode) {
+                reverseTimeRemaining--;
+                if (reverseTimeRemaining <= 0) {
+                    reverseTimeRemaining = 0;
+                    triggerVictory();
+                }
+                const m = String(Math.floor(reverseTimeRemaining / 60)).padStart(2, '0');
+                const s = String(reverseTimeRemaining % 60).padStart(2, '0');
+                document.getElementById('timer-display').innerText = `TIME: ${m}:${s}`;
+            } else {
+                const el = Math.floor((Date.now() - startTime) / 1000);
+                const m = String(Math.floor(el / 60)).padStart(2, '0');
+                const s = String(el % 60).padStart(2, '0');
+                document.getElementById('timer-display').innerText = `TIME: ${m}:${s}`;
+            }
+        }, 1000);
+    }
+
+    function triggerVictory() {
+        clearInterval(timerInterval);
+        
+        closeSearch();
+        closeSharingan();
+        
+        if(isCreatingGhost) {
+            document.getElementById('ghost-overlay').style.display = 'flex';
+            return;
+        }
+
+        let emojiHTML = "";
+        let size = isGauntletMode && gauntletGridsCleared < 3 ? 2 : 3;
+        
+        if (isGauntletMode) {
+            document.getElementById('victory-emoji-grid').style.display = 'none'; 
+        } else {
+            for(let i=0; i<9; i+=size) {
+                emojiHTML += missionGridEmojis.slice(i, i+size).join('') + "<br>";
+            }
+            document.getElementById('victory-emoji-grid').innerHTML = emojiHTML;
+            document.getElementById('victory-emoji-grid').style.display = 'block';
+        }
+
+        if (isGauntletMode) {
+            finalTimeString = "00:00"; 
+            currentScore = gauntletGridsCleared; 
+            document.getElementById('v-time').innerText = "END OF LINE";
+            document.getElementById('v-score').innerText = currentScore + " GRIDS";
+            document.getElementById('victory-title-text').innerText = "GAUNTLET OVER";
+            document.getElementById('victory-title-text').style.color = "var(--gauntlet)";
+            document.getElementById('victory-box').style.borderColor = "var(--gauntlet)";
+            document.getElementById('review-btn').style.display = 'none'; 
+        } else if (isReverseMode && reverseTimeRemaining === 0 && filledCount < 9) {
+            finalTimeString = "00:00"; 
+            currentScore = 0; 
+            document.getElementById('v-time').innerText = "TIME EXPIRED";
+            document.getElementById('v-score').innerText = "0";
+            document.getElementById('victory-title-text').innerText = "MISSION FAILED";
+            document.getElementById('victory-title-text').style.color = "#ff0033";
+            document.getElementById('victory-box').style.borderColor = "#ff0033";
+            document.getElementById('review-btn').style.display = 'none'; 
+        } else {
+            if (isReverseMode) {
+                let timeUsed = 300 - reverseTimeRemaining;
+                const m = String(Math.floor(timeUsed / 60)).padStart(2, '0');
+                const s = String(timeUsed % 60).padStart(2, '0');
+                finalTimeString = `${m}:${s}`;
+            } else {
+                const el = Math.floor((Date.now() - startTime) / 1000);
+                const m = String(Math.floor(el / 60)).padStart(2, '0');
+                const s = String(el % 60).padStart(2, '0');
+                finalTimeString = `${m}:${s}`;
+            }
+
+            document.getElementById('v-time').innerText = finalTimeString;
+            document.getElementById('v-score').innerText = currentScore;
+            
+            document.getElementById('victory-title-text').innerText = "MISSION CLEAR";
+            document.getElementById('victory-title-text').style.color = "#00ff88";
+            document.getElementById('victory-box').style.borderColor = "#00ff88";
+            document.getElementById('review-btn').style.display = 'inline-block';
+            
+            if(!isSharinganMode && !isPlayingGhost && currentScore > 0) {
+                personalBountyPoints += currentScore;
+                localStorage.setItem('team7_bounty_points', personalBountyPoints.toString());
+            }
+        }
+
+        if(isPlayingGhost) {
+            document.getElementById('transmit-btn').style.display = 'none';
+            document.getElementById('sync-status').innerText = "DUEL COMPLETE";
+            document.getElementById('player-name').style.display = 'none';
+            
+            if(playerClaims > ghostClaims) {
+                document.getElementById('victory-title-text').innerText = "GHOST DEFEATED";
+                document.getElementById('victory-title-text').style.color = "var(--accent)";
+                document.getElementById('victory-box').style.borderColor = "var(--accent)";
+            } else {
+                document.getElementById('victory-title-text').innerText = "SQUAD WIPED";
+                document.getElementById('victory-title-text').style.color = "var(--ghost)";
+                document.getElementById('victory-box').style.borderColor = "var(--ghost)";
+            }
+        } else if(isSharinganMode) {
+            document.getElementById('transmit-btn').style.display = 'none';
+            document.getElementById('sync-status').innerText = "PRACTICE CLEARED - RANKING DISABLED";
+            document.getElementById('sync-status').style.color = "var(--sharingan)";
+            document.getElementById('player-name').style.display = 'none';
+        } else {
+            document.getElementById('transmit-btn').style.display = 'block';
+            document.getElementById('sync-status').innerText = "Awaiting Transmission...";
+            document.getElementById('sync-status').style.color = "#888";
+            document.getElementById('player-name').style.display = 'block';
+        }
+
+        setTimeout(() => { 
+            document.getElementById('victory-overlay').style.display = 'flex'; 
+            if(!isSharinganMode && !isPlayingGhost && (reverseTimeRemaining > 0 || !isReverseMode)) document.getElementById('player-name').focus();
+        }, 600);
+    }
+
+    function shareIntel() {
+        let gridStr = "";
+        let size = isGauntletMode && gauntletGridsCleared < 3 ? 2 : 3;
+        let totalCells = isGauntletMode ? (gauntletGridsCleared < 3 ? 4 : 9) : 9;
+        
+        if (isGauntletMode) {
+            gridStr = "☠️ THE GAUNTLET RUN\n";
+        } else {
+            for(let i=0; i<totalCells; i+=size) {
+                gridStr += missionGridEmojis.slice(i, i+size).join('') + "\n";
+            }
+        }
+        
+        let titleBlock = `Operation: TEAM 7 CIPHER 🏴‍☠️\nMission: ${currentMissionName}`;
+        if(isPlayingGhost) {
+            titleBlock += `\nResult: ${playerClaims > ghostClaims ? 'GHOST DEFEATED' : 'SQUAD WIPED'}`;
+        }
+        
+        let shareText = "";
+        if (isGauntletMode) {
+            shareText = `${titleBlock}\nTotal Grids Cleared: ${currentScore}\n\n${gridStr}\nCan you beat my intel?`;
+        } else {
+            shareText = `${titleBlock}\nTime: ${finalTimeString} | Score: ${currentScore}\n\n${gridStr}\nCan you beat my intel?`;
+        }
+        
+        copyToClipboardFallback(shareText, () => {
+            const btn = document.getElementById('share-btn');
+            const origText = btn.innerText;
+            btn.innerText = "INTEL COPIED!";
+            btn.style.backgroundColor = "#00d4ff";
+            btn.style.color = "#000";
+            setTimeout(() => {
+                btn.innerText = origText;
+                btn.style.backgroundColor = "#000";
+                btn.style.color = "var(--host)";
+            }, 2000);
+        });
+    }
+
+    async function transmitScore() {
+        const nameInput = document.getElementById('player-name').value.trim();
+        const codename = nameInput !== "" ? nameInput : "GHOST";
+        const btn = document.getElementById('transmit-btn');
+        const statusText = document.getElementById('sync-status');
+        
+        btn.innerText = "TRANSMITTING..."; btn.disabled = true;
+        
+        const payload = { name: codename, mission: currentMissionName, score: currentScore, timeStr: finalTimeString, rawTime: (Date.now()-startTime) };
+        let lb = JSON.parse(localStorage.getItem('team7_lb') || '[]');
+        lb.push(payload); 
+        lb.sort((a,b) => b.score - a.score || a.rawTime - b.rawTime);
+        localStorage.setItem('team7_lb', JSON.stringify(lb.slice(0, 10)));
+
+        try {
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            statusText.innerText = `Data Synced, ${codename}.`; statusText.style.color = "#00ff88"; btn.innerText = "COMPLETE";
+        } catch (e) {
+            statusText.innerText = "Global Sync Failed. Saved Locally."; statusText.style.color = "#ff4d4d"; btn.innerText = "RETRY"; btn.disabled = false;
+        }
+    }
+
+    async function showLeaderboard() {
+        document.getElementById('leaderboard-overlay').style.display = 'flex';
+        const statusText = document.getElementById('lb-status');
+        const container = document.getElementById('lb-data');
+        
+        statusText.innerText = "Connecting to Global Network...";
+        container.innerHTML = "";
+
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            statusText.innerText = "Live Global Intelligence";
+            if(data.length === 0) {
+                container.innerHTML = "<div style='padding:20px; color:#666;'>Archives Empty.</div>";
+                return;
+            }
+            data.forEach(entry => {
+                container.innerHTML += `
+                    <div class="lb-row">
+                        <span style="flex:2; font-weight:bold;">${entry.name}</span>
+                        <span style="flex:2; font-size:0.8rem; color:#aaa;">${entry.mission}</span>
+                        <span style="flex:1; text-align:right; color:var(--accent); font-weight:900;">${entry.score}</span>
+                    </div>`;
+            });
+        } catch (e) {
+            statusText.innerText = "Network Error. Showing Local Backup.";
+            statusText.style.color = "#ff4d4d";
+            const lb = JSON.parse(localStorage.getItem('team7_lb') || '[]');
+            if(lb.length === 0) container.innerHTML = "No Local Data.";
+            lb.forEach(entry => {
+                container.innerHTML += `<div class="lb-row"><span style="flex:2">${entry.name || 'Unknown'}</span><span style="flex:2">${entry.mission}</span><span style="flex:1; text-align:right; color:var(--accent)">${entry.score}</span></div>`;
+            });
+        }
+    }
+
+    function abortMission() { 
+        clearInterval(timerInterval);
+        document.getElementById('game-theater').style.display = 'none';
+        document.getElementById('victory-overlay').style.display = 'none';
+        document.getElementById('relay-overlay').style.display = 'none';
+        document.getElementById('ghost-overlay').style.display = 'none';
+        
+        document.getElementById('hq-lobby').style.display = 'flex';
+        showPanel('pillar-menu');
+        
+        isGauntletMode = false;
+        isRelayMode = false;
+        isPlayingGhost = false;
+        isCreatingGhost = false;
+        isSharinganMode = false;
+        isReverseMode = false; 
+        currentDifficulty = 1;
+
+        const revBtn = document.getElementById('reverse-toggle-btn');
+        if(revBtn) {
+            revBtn.innerText = "REVERSE MODE: OFF";
+            revBtn.style.borderColor = "#555";
+            revBtn.style.color = "#aaa";
+            const normColors = ['--rank-c', '--rank-c', '--rank-c', '--rank-b', '--rank-b', '--rank-b', '--rank-a', '--rank-a', '--accent', '--accent'];
+            document.querySelectorAll('.diff-btn').forEach((b, i) => b.style.setProperty('--c', `var(${normColors[i]})`));
+        }
+
+        document.getElementById('timer-display').style.color = "#fff";
+        document.body.style.backgroundColor = 'var(--bg)'; 
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
+    function closeSearch() { document.getElementById('search-terminal').style.display = 'none'; }
+
+    init();
+</script>
+</body>
+</html>
