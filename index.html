@@ -3242,7 +3242,7 @@
                 </div>
 
                 <div id="extr-display" style="display:flex; align-items:center; gap:10px;">
-                    <span id="extr-text">EXTR: 0/4</span>
+                    <span id="extr-text">EXTR: 0</span>
                     <button class="btn btn-relay" id="send-board-btn" onclick="triggerRelayHandoff()"
                         style="margin:0; padding: 4px 10px; font-size: 0.8rem; height: auto;">PASS BATON</button>
                 </div>
@@ -4249,6 +4249,37 @@
                         alert("BATON INTEL CORRUPTED OR EXPIRED.");
                     }
                 }
+
+                // Deep link: Live PVP Clash invite
+const incomingClash = urlParams.get('clash');
+if (incomingClash) {
+    showPanel('squad-missions-panel');
+    setClashMode('live');
+    document.getElementById('live-room-code-input').value = incomingClash.toUpperCase();
+    // Flash the join button so they know what to tap
+    const joinBtn = document.querySelector('[onclick="joinLiveClashRoom()"]');
+    if (joinBtn) {
+        joinBtn.style.borderColor = '#00ff88';
+        joinBtn.style.color = '#00ff88';
+        joinBtn.innerText = '⚡ TAP TO JOIN';
+        setTimeout(() => { joinBtn.style.borderColor = '#555'; joinBtn.style.color = '#aaa'; joinBtn.innerText = 'JOIN ROOM'; }, 4000);
+    }
+    document.getElementById('live-clash-status').innerText = `Room code ${incomingClash} loaded — tap JOIN ROOM`;
+    document.getElementById('live-clash-status').style.color = '#00ff88';
+}
+
+// Deep link: Live Relay invite
+const incomingLiveRelay = urlParams.get('live_relay');
+if (incomingLiveRelay) {
+    showPanel('squad-missions-panel');
+    setTimeout(() => {
+        document.getElementById('live-relay-lobby').style.display = 'flex';
+        document.getElementById('lr-join-panel').style.display = 'block';
+        document.getElementById('lr-room-code-input').value = incomingLiveRelay.toUpperCase();
+        document.getElementById('lr-status').style.color = '#00ff88';
+        document.getElementById('lr-status').innerText = `Room ${incomingLiveRelay} loaded — tap JOIN →`;
+    }, 300);
+}
 
                 // If everything loaded perfectly, hide the loading screen!
                 document.getElementById('loading-overlay').style.display = 'none';
@@ -5336,12 +5367,12 @@
         };
 
         function processRelayStep() {
-            if (!isRelayMode) return;
-            sessionExtractions++;
-            document.getElementById('extr-text').innerText = `EXTR: ${sessionExtractions}/4`;
-            if (sessionExtractions >= 4 && filledCount < (currentGridSize * currentGridSize)) { setTimeout(triggerRelayHandoff, 500); }
-            if (liveRelayCode) saveLiveRelayState();
-        }
+    if (!isRelayMode) return;
+    sessionExtractions++;
+    document.getElementById('extr-text').innerText = `EXTR: ${sessionExtractions}`;
+    // No forced cap — player decides when to pass baton
+    if (liveRelayCode) saveLiveRelayState();
+}
 
         function validate(c) {
             const intel = (c["operative"] + " " + (c["series"] || "") + " " + (c["tags"] || "")).toLowerCase();
@@ -9501,7 +9532,7 @@
             const phoneInput = document.getElementById('challenge-phone');
             const phone = phoneInput ? phoneInput.value.trim().replace(/\D/g, '') : '';
             const gameLink = window.location.href.split('?')[0];
-            const msg = `Duel me nigga 🏴‍☠️⚔️\n\nI'm challenging you to a SHADOW CLASH on TEAM7PIRATES CIPHER.\n\nRoom Code: ${roomCode}\n\nGame: ${gameLink}`;
+            const msg = `I'll meet you on the grand line 🏴‍☠️⚔️\n\nI'm challenging you to a SHADOW CLASH on TEAM7PIRATES CIPHER — don't embarrass yourself.\n\nRoom Code: ${roomCode}\n\nTap to jump straight in: ${gameLink}?clash=${roomCode}`;
 
             if (phone.length >= 7) {
                 window.location.href = `sms:${phone}?&body=${encodeURIComponent(msg)}`;
@@ -9513,6 +9544,25 @@
                 });
             }
         }
+
+        function sendRelayText(roomCode) {
+    const phoneInput = document.getElementById('relay-invite-phone');
+    const phone = phoneInput ? phoneInput.value.trim().replace(/\D/g, '') : '';
+    const gameLink = window.location.href.split('?')[0] + `?live_relay=${roomCode}`;
+    const msg = `I need you man 🏴‍☠️\n\nJoin my TEAM7PIRATES CIPHER relay — we're building the board together.\n\nRoom Code: ${roomCode}\n\nTap to jump straight in: ${gameLink}`;
+
+    if (phone.length >= 7) {
+        window.location.href = `sms:${phone}?&body=${encodeURIComponent(msg)}`;
+    } else {
+        copyToClipboardFallback(msg, () => {
+            const btn = document.getElementById('relay-send-btn');
+            if (btn) { btn.innerText = '✓ COPIED!'; btn.style.color = '#00ff88'; }
+            setTimeout(() => {
+                if (btn) { btn.innerText = '📋 COPY INVITE'; btn.style.color = 'var(--relay)'; }
+            }, 2500);
+        });
+    }
+}
 
         function searchPlayerByUsername() {
             const val = document.getElementById('username-search-input')?.value.trim().toUpperCase();
@@ -9793,7 +9843,23 @@
                 liveRelayRoom = { room_code: code, grid_config: gridConfig, squad: [name], filled_cells: {}, stamps: {}, score: 0, time_elapsed: 0, chain_count: 0 };
 
                 status.style.color = '#00ff88';
-                status.innerHTML = `Relay active! Room code: <strong style="color:#fff;font-size:1.3rem;letter-spacing:4px;">${code}</strong><br><span style="color:#888;font-size:0.65rem;">Share this code with your squad</span>`;
+status.innerHTML = `
+    Relay active! Code: <strong style="color:#fff; font-size:1.3rem; letter-spacing:4px;">${code}</strong>
+    <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+        <input type="tel" id="relay-invite-phone" placeholder="PHONE (OPTIONAL — LEAVE BLANK TO COPY)"
+            style="padding:9px; background:#000; border:1px solid var(--relay); color:#fff;
+            font-size:0.85rem; text-align:center; border-radius:4px; outline:none;
+            width:100%; box-sizing:border-box; letter-spacing:1px;">
+        <button id="relay-send-btn" onclick="sendRelayText('${code}')"
+            style="padding:9px; background:transparent; border:2px solid var(--relay);
+            color:var(--relay); font-weight:900; font-size:0.75rem; letter-spacing:2px;
+            border-radius:4px; cursor:pointer; width:100%;">
+            📱 SEND INVITE TEXT
+        </button>
+        <div style="color:#444; font-size:0.6rem; text-align:center; letter-spacing:1px;">
+            Enter a phone to open SMS · Leave blank to copy the message
+        </div>
+    </div>`;
 
                 subscribeToLiveRelay(code);
 
