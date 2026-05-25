@@ -9598,14 +9598,16 @@
                 // Subscribe and wait for guest to join
                 liveClashChannel = sb.channel(`clash-${code}`)
                     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'clash_rooms', filter: `room_code=eq.${code}` }, payload => {
-                        if (payload.new.status === 'active' && payload.new.guest_name) {
-                            liveClashRoom = payload.new;
-                            currentOpponentName = payload.new.guest_name;
-                            status.innerText = `${payload.new.guest_name} joined! Starting...`;
-                            setTimeout(() => launchLiveClash(), 1500);
-                        }
-                        if (payload.new.status === 'complete') handleLiveClashResult(payload.new);
-                    })
+    // Only launch when guest FIRST joins (old had no guest, new does)
+    const guestJustJoined = !payload.old?.guest_name && payload.new?.guest_name;
+    if (payload.new.status === 'active' && guestJustJoined && !isDuelActive) {
+        liveClashRoom = payload.new;
+        currentOpponentName = payload.new.guest_name;
+        status.innerText = `${payload.new.guest_name} joined! Starting...`;
+        setTimeout(() => launchLiveClash(), 1500);
+    }
+    if (payload.new.status === 'complete') handleLiveClashResult(payload.new);
+})
                     .on('broadcast', { event: 'move' }, ({ payload }) => handleOpponentLiveMove(payload))
                     .subscribe();
             } catch (e) {
