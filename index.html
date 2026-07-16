@@ -7406,6 +7406,10 @@
                     <!-- ▲ REPLACE href WITH YOUR GITHUB RELEASE APK LINK ▲ -->
 
                     <div class="appdl-meta">Android 7.0+ · ~50 MB · Not on the Play Store</div>
+                    <div id="appdl-fallback" style="display:none;margin-top:14px;padding:12px 14px;border-radius:10px;background:rgba(255,182,39,.08);border:1px solid rgba(255,182,39,.3);font-size:.82rem;color:#c9d3e6;text-align:center;">
+                        If the download didn't start, open this link in your browser:<br>
+                        <a href="https://github.com/team7pirates/AnimeGrid/releases/download/v1.0/app-debug.apk" target="_blank" rel="noopener" style="color:#00e676;word-break:break-all;">github.com/team7pirates/AnimeGrid/releases</a>
+                    </div>
 
                     <div class="appdl-steps">
                         <div class="appdl-step"><span>1</span><div><b>Download</b> the file above on your phone.</div></div>
@@ -11684,17 +11688,17 @@
             const o = document.getElementById('app-dl-overlay');
             if (o) o.style.display = 'none';
         }
-        // In a Wix iframe, a normal download link is sandboxed and does nothing on phones.
-        // Force the browser's TOP-LEVEL tab to open the file so the download actually starts.
+        // Wix's iframe is sandboxed WITHOUT allow-top-navigation, so we can't redirect the
+        // top window. Opening a fresh tab is allowed, though — that pops the download out to
+        // the real browser where it can proceed.
         function appDownloadClick(e) {
             const url = e.currentTarget.getAttribute('href');
-            try {
-                if (window.top && window.top !== window.self) {
-                    e.preventDefault();
-                    window.top.location.href = url;   // break out of the iframe
-                }
-            } catch (err) {
-                // cross-origin block: let the target="_blank" fallback handle it
+            e.preventDefault();
+            const win = window.open(url, '_blank', 'noopener');
+            if (!win) {
+                // popup blocked — show the link so the user can long-press / copy it
+                const box = document.getElementById('appdl-fallback');
+                if (box) { box.style.display = 'block'; }
             }
         }
 
