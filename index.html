@@ -7049,6 +7049,32 @@
     <div id="grid-void"></div>
 
     <audio id="lobby-music" preload="auto"></audio>
+    <script>
+        // Stop the lobby music when the app/tab is closed, backgrounded, or hidden;
+        // resume it when the user comes back (unless they've muted it).
+        (function () {
+            function pauseMusic() {
+                var el = document.getElementById('lobby-music');
+                if (el && !el.paused) { el._wasPlaying = true; el.pause(); }
+            }
+            function resumeMusic() {
+                var el = document.getElementById('lobby-music');
+                if (el && el._wasPlaying && !(typeof isMuted !== 'undefined' && isMuted)) {
+                    el._wasPlaying = false;
+                    var p = el.play(); if (p !== undefined) p.catch(function () { });
+                }
+            }
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) pauseMusic(); else resumeMusic();
+            });
+            // Extra safety for app close / navigate away (fires when the page is being torn down)
+            window.addEventListener('pagehide', pauseMusic);
+            window.addEventListener('blur', function () {
+                // On mobile app close, blur fires; pause defensively (visibilitychange usually handles resume)
+                if (document.hidden) pauseMusic();
+            });
+        })();
+    </script>
     <audio id="sfx-mushi" src="audio/mushi.mp3" preload="auto"></audio>
     <audio id="sfx-tower" src="audio/tower.mp3" preload="auto"></audio>
 
@@ -7402,17 +7428,17 @@
                     <p class="appdl-sub">The full arcade as a real Android app — full screen, no browser bar, straight into the menu.</p>
 
                     <!-- ▼ REPLACE href WITH YOUR GITHUB RELEASE APK LINK ▼ -->
-                    <a class="appdl-cta" href="https://github.com/team7pirates/AnimeGrid/releases/download/v1.0/Team7PiratesArcade-v1.0.apk" target="_blank" rel="noopener" onclick="appDownloadClick(event)">⬇ DOWNLOAD FOR ANDROID</a>
+                    <a class="appdl-cta" href="https://github.com/team7pirates/AnimeGrid/releases/latest" target="_blank" rel="noopener" onclick="appDownloadClick(event)">⬇ DOWNLOAD FOR ANDROID</a>
                     <!-- ▲ REPLACE href WITH YOUR GITHUB RELEASE APK LINK ▲ -->
 
                     <div class="appdl-meta">Android 7.0+ · ~50 MB · Not on the Play Store</div>
                     <div id="appdl-fallback" style="display:none;margin-top:14px;padding:12px 14px;border-radius:10px;background:rgba(255,182,39,.08);border:1px solid rgba(255,182,39,.3);font-size:.82rem;color:#c9d3e6;text-align:center;">
                         If the download didn't start, open this link in your browser:<br>
-                        <a href="https://github.com/team7pirates/AnimeGrid/releases/download/v1.0/app-debug.apk" target="_blank" rel="noopener" style="color:#00e676;word-break:break-all;">github.com/team7pirates/AnimeGrid/releases</a>
+                        <a href="https://github.com/team7pirates/AnimeGrid/releases/latest" target="_blank" rel="noopener" style="color:#00e676;word-break:break-all;">github.com/team7pirates/AnimeGrid/releases</a>
                     </div>
 
                     <div class="appdl-steps">
-                        <div class="appdl-step"><span>1</span><div><b>Download</b> the file above on your phone.</div></div>
+                        <div class="appdl-step"><span>1</span><div>Tap <b>Download</b> above — it opens the release page. There, tap the <b>.apk file</b> under "Assets" to download it.</div></div>
                         <div class="appdl-step"><span>2</span><div>Tap it, and when Android asks, allow <b>"install from this source"</b> (normal for any app outside the Play Store).</div></div>
                         <div class="appdl-step"><span>3</span><div>Tap <b>Install</b>. If Play Protect warns, choose <b>Install anyway</b>.</div></div>
                         <div class="appdl-step"><span>4</span><div>Open <b>Team7Pirates Arcade</b> from your apps and play.</div></div>
