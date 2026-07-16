@@ -716,6 +716,11 @@
         .appdl-cta { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: 900; font-size: 1rem; letter-spacing: 0.06em; color: #04120a; background: linear-gradient(90deg, #00e676, #00c853); box-shadow: 0 10px 30px rgba(0, 230, 118, 0.3); transition: 0.16s; }
         .appdl-cta:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0, 230, 118, 0.45); }
         .appdl-meta { text-align: center; font-size: 0.7rem; letter-spacing: 0.1em; color: #8792ad; text-transform: uppercase; margin-top: 12px; }
+        .appdl-pointer { display: flex; gap: 14px; align-items: flex-start; text-align: left; background: linear-gradient(120deg, rgba(0,230,118,.12), rgba(0,230,118,.04)); border: 1.5px solid rgba(0,230,118,.45); border-radius: 13px; padding: 16px 18px; color: #dff5e8; font-size: 1rem; line-height: 1.45; }
+        .appdl-pointer-ic { font-size: 1.7rem; line-height: 1; animation: appdlBounce 1.4s ease-in-out infinite; }
+        .appdl-pointer b { color: #00e676; }
+        .appdl-pointer-note { display: block; margin-top: 6px; font-size: 0.8rem; color: #8792ad; }
+        @keyframes appdlBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
         .appdl-steps { margin-top: 24px; display: flex; flex-direction: column; gap: 14px; }
         .appdl-step { display: flex; gap: 14px; align-items: flex-start; font-size: 0.95rem; color: #c9d3e6; }
         .appdl-step span { flex: 0 0 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: 900; font-size: 0.9rem; color: #04120a; background: linear-gradient(150deg, #22e0ff, #0f8fb3); }
@@ -7425,23 +7430,23 @@
                     <button class="appdl-close" onclick="closeAppDownload()">✕</button>
                     <div class="appdl-eyebrow">// Take the Arcade with you</div>
                     <div class="appdl-title">📱 GET THE APP</div>
-                    <p class="appdl-sub">The full arcade as a real Android app — full screen, no browser bar, straight into the menu.</p>
+                    <p class="appdl-sub">Play the full arcade as a real Android app — full screen, no browser bar, straight into the menu.</p>
 
-                    <!-- ▼ REPLACE href WITH YOUR GITHUB RELEASE APK LINK ▼ -->
-                    <a class="appdl-cta" href="https://github.com/team7pirates/AnimeGrid/releases/download/v1.0/app-debug.apk" target="_blank" rel="noopener noreferrer">⬇ DOWNLOAD FOR ANDROID</a>
-                    <!-- ▲ REPLACE href WITH YOUR GITHUB RELEASE APK LINK ▲ -->
-
-                    <div class="appdl-meta">Android 7.0+ · ~50 MB · Not on the Play Store</div>
-                    <div id="appdl-fallback" style="display:block;margin-top:14px;padding:12px 14px;border-radius:10px;background:rgba(255,182,39,.08);border:1px solid rgba(255,182,39,.3);font-size:.82rem;color:#c9d3e6;text-align:center;">
-                        Button not working? Tap this direct link:<br>
-                        <a href="https://github.com/team7pirates/AnimeGrid/releases/download/v1.0/app-debug.apk" target="_blank" rel="noopener noreferrer" style="color:#00e676;word-break:break-all;">github.com/team7pirates/AnimeGrid/releases/download/v1.0/app-debug.apk</a>
+                    <div class="appdl-pointer">
+                        <div class="appdl-pointer-ic">👇</div>
+                        <div>
+                            <b>Look for the “APP” button on this page</b> — above or below the game — and tap it to download.
+                            <span class="appdl-pointer-note">(The download has to run from the page itself, not from inside the game window.)</span>
+                        </div>
                     </div>
 
+                    <div class="appdl-meta">Android 7.0+ · ~50 MB · Not on the Play Store</div>
+
                     <div class="appdl-steps">
-                        <div class="appdl-step"><span>1</span><div>Tap <b>Download</b> above — the <b>.apk</b> file saves to your Downloads. (If asked, choose <b>keep</b>.)</div></div>
-                        <div class="appdl-step"><span>2</span><div>Tap it, and when Android asks, allow <b>"install from this source"</b> (normal for any app outside the Play Store).</div></div>
+                        <div class="appdl-step"><span>1</span><div>Tap the <b>APP</b> button on this page — the <b>.apk</b> file saves to your Downloads. (If asked, choose <b>keep</b>.)</div></div>
+                        <div class="appdl-step"><span>2</span><div>Open it, and when Android asks, allow <b>"install from this source"</b> (normal for any app outside the Play Store).</div></div>
                         <div class="appdl-step"><span>3</span><div>Tap <b>Install</b>. If Play Protect warns, choose <b>Install anyway</b>.</div></div>
-                        <div class="appdl-step"><span>4</span><div>Open <b>Team7Pirates Arcade</b> from your apps and play.</div></div>
+                        <div class="appdl-step"><span>4</span><div>Open <b>T7P Arcade</b> from your apps and play.</div></div>
                     </div>
 
                     <p class="appdl-foot">📱 iPhone? Tap your browser's <b>Share → Add to Home Screen</b> for a full-screen shortcut.</p>
