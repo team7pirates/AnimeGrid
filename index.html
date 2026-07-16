@@ -7402,7 +7402,7 @@
                     <p class="appdl-sub">The full arcade as a real Android app — full screen, no browser bar, straight into the menu.</p>
 
                     <!-- ▼ REPLACE href WITH YOUR GITHUB RELEASE APK LINK ▼ -->
-                    <a class="appdl-cta" href="https://github.com/team7pirates/AnimeGrid/releases/download/v1.0/Team7PiratesArcade-v1.0.apk" download>⬇ DOWNLOAD FOR ANDROID</a>
+                    <a class="appdl-cta" href="https://github.com/team7pirates/AnimeGrid/releases/download/v1.0/app-debug.apk" target="_blank" rel="noopener" onclick="appDownloadClick(event)">⬇ DOWNLOAD FOR ANDROID</a>
                     <!-- ▲ REPLACE href WITH YOUR GITHUB RELEASE APK LINK ▲ -->
 
                     <div class="appdl-meta">Android 7.0+ · ~50 MB · Not on the Play Store</div>
@@ -11683,6 +11683,19 @@
         function closeAppDownload() {
             const o = document.getElementById('app-dl-overlay');
             if (o) o.style.display = 'none';
+        }
+        // In a Wix iframe, a normal download link is sandboxed and does nothing on phones.
+        // Force the browser's TOP-LEVEL tab to open the file so the download actually starts.
+        function appDownloadClick(e) {
+            const url = e.currentTarget.getAttribute('href');
+            try {
+                if (window.top && window.top !== window.self) {
+                    e.preventDefault();
+                    window.top.location.href = url;   // break out of the iframe
+                }
+            } catch (err) {
+                // cross-origin block: let the target="_blank" fallback handle it
+            }
         }
 
         let isGauntletMode = false;
