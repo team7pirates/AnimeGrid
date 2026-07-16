@@ -2568,6 +2568,24 @@
             backdrop-filter: none !important;
         }
 
+        /* --- T7P PREMIUM SPLASH (inside #loading-overlay) --- */
+        #loading-overlay { background: #020205; transition: opacity 0.5s ease-out; }
+        #loading-overlay.hide { opacity: 0; }
+        .t7p-splash-core { text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .t7p-splash-beaker { width: 70px; height: 90px; border: 4px solid rgba(255,255,255,0.2); border-top: none; border-radius: 0 0 35px 35px; position: relative; margin-bottom: 25px; box-shadow: inset 0 -15px 30px rgba(0,240,255,0.15); overflow: hidden; }
+        .t7p-splash-beaker::before { content: ''; position: absolute; top: 0; left: -8px; right: -8px; height: 6px; background: rgba(255,255,255,0.5); border-radius: 3px; z-index: 10; }
+        .t7p-splash-liquid { position: absolute; bottom: 0; left: 0; width: 100%; height: 40%; background: #00f0ff; box-shadow: 0 0 25px #00f0ff; animation: liquidWave 2s ease-in-out infinite alternate; }
+        .t7p-splash-sil { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); width: 32px; height: 48px; background: #080a10; clip-path: polygon(50% 0%, 80% 20%, 100% 60%, 80% 100%, 20% 100%, 0% 60%, 20% 20%); opacity: 0.9; animation: silFloat 2.5s ease-in-out infinite; z-index: 3; }
+        .t7p-splash-chains { position: absolute; top: 45%; left: -30px; width: 130px; height: 6px; background: repeating-linear-gradient(90deg, transparent, transparent 4px, #ff2d55 4px, #ff2d55 12px); transform: rotate(-15deg); box-shadow: 0 0 12px #ff2d55; z-index: 5; border-radius: 4px; }
+        .t7p-splash-chains::after { content: ''; position: absolute; top: 25px; left: 10px; width: 130px; height: 6px; background: repeating-linear-gradient(90deg, transparent, transparent 4px, #ff2d55 4px, #ff2d55 12px); transform: rotate(35deg); box-shadow: 0 0 12px #ff2d55; border-radius: 4px; }
+        @keyframes liquidWave { 0% { height: 35%; background: #00f0ff; box-shadow: 0 0 20px #00f0ff; } 100% { height: 85%; background: #00ff88; box-shadow: 0 0 30px #00ff88; } }
+        @keyframes silFloat { 0%, 100% { bottom: 10px; } 50% { bottom: 18px; } }
+        .t7p-splash-brand { font-size: 1.3rem; font-weight: 900; color: #fff; letter-spacing: 10px; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255,255,255,0.4); }
+        .t7p-splash-bar { width: 220px; height: 3px; background: #111520; border-radius: 3px; overflow: hidden; position: relative; margin-bottom: 12px; }
+        .t7p-splash-fill { position: absolute; top: 0; left: 0; height: 100%; width: 40%; background: #00f0ff; border-radius: 3px; animation: splashLoad 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        .t7p-splash-msg { font-size: 0.65rem !important; font-weight: 900; letter-spacing: 4px; color: #7e8aa3 !important; animation: none !important; padding: 0 !important; }
+        @keyframes splashLoad { 0% { left: -40%; width: 40%; } 50% { width: 80%; } 100% { left: 100%; width: 40%; } }
+
         #game-theater {
             position: fixed;
             top: 0;
@@ -7086,9 +7104,18 @@
     <button id="return-debrief-btn" onclick="returnToDebrief()">⬅️ BACK TO DEBRIEF</button>
 
     <div id="loading-overlay" style="z-index: 999999;">
-        <h2
-            style="color:var(--accent); letter-spacing: 5px; animation: pulse 1s infinite; font-size: 1.5rem; text-align:center; padding: 20px;">
-            CALCULATING<br>TACTICAL PARAMETERS...</h2>
+        <div class="t7p-splash-core">
+            <div class="t7p-splash-beaker">
+                <div class="t7p-splash-liquid"></div>
+                <div class="t7p-splash-sil"></div>
+                <div class="t7p-splash-chains"></div>
+            </div>
+            <div class="t7p-splash-brand">TEAM7PIRATES</div>
+            <div class="t7p-splash-bar">
+                <div class="t7p-splash-fill"></div>
+            </div>
+            <h2 class="t7p-splash-msg" id="splash-msg">ESTABLISHING UPLINK...</h2>
+        </div>
     </div>
 
     <div id="reverse-intel-overlay" onclick="closeOverlay('reverse-intel-overlay')"
@@ -11933,15 +11960,22 @@
             showPanel('pillar-menu');
 
             try {
-                // Show the loading screen while we fetch data
-                document.getElementById('loading-overlay').style.display = 'flex';
-                document.querySelector('#loading-overlay h2').innerText = "CONNECTING TO DATABASE...";
+                // Show the premium splash while we fetch data
+                const _splash = document.getElementById('loading-overlay');
+                if (_splash) { _splash.style.display = 'flex'; _splash.classList.remove('hide'); }
+                const _sm = document.getElementById('splash-msg');
+                if (_sm) _sm.innerText = "SYNCING ROSTER DATA...";
+                // Safety net: never let the splash trap the user — force-hide after 12s no matter what.
+                window._splashSafety = setTimeout(() => {
+                    const s = document.getElementById('loading-overlay');
+                    if (s && s.style.display !== 'none') { s.classList.add('hide'); setTimeout(() => { s.style.display = 'none'; }, 500); }
+                }, 12000);
 
                 // Load the roster from Supabase
                 const { data: rosterData, error: rosterErr } = await sb.from('roster').select('*');
                 if (rosterErr || !rosterData) {
-                    document.querySelector('#loading-overlay h2').innerHTML = "⚠️ DATABASE ERROR ⚠️<br>Could not load the roster. Check your connection and refresh.";
-                    document.querySelector('#loading-overlay h2').style.color = "#ff0033";
+                    const sm = document.getElementById('splash-msg');
+                    if (sm) { sm.innerHTML = "⚠️ UPLINK FAILED ⚠️<br>Check connection and refresh."; sm.style.color = "#ff0033"; }
                     return;
                 }
                 rDB_ALL = rosterData.map(r => ({
@@ -11977,12 +12011,17 @@
 
                 hydrateCloudBests();
 
-                document.getElementById('loading-overlay').style.display = 'none';
+                // Data's ready — apply the universe, then fade the splash out gracefully.
                 applyUniverse('universe');   // ALL universe only — picker removed
+                if (window._splashSafety) clearTimeout(window._splashSafety);
+                setTimeout(() => {
+                    const s = document.getElementById('loading-overlay');
+                    if (s) { s.classList.add('hide'); setTimeout(() => { s.style.display = 'none'; }, 500); }
+                }, 1200);   // brief minimum view so it reads like a real app splash
 
             } catch (error) {
-                document.querySelector('#loading-overlay h2').innerHTML = "⚠️ CRITICAL UPLINK FAILURE ⚠️<br>Check your internet connection or Google Sheets link.";
-                document.querySelector('#loading-overlay h2').style.color = "#ff0033";
+                const sm = document.getElementById('splash-msg');
+                if (sm) { sm.innerHTML = "⚠️ CRITICAL UPLINK FAILURE ⚠️<br>Check your internet connection."; sm.style.color = "#ff0033"; }
             }
 
             // Survival Input Keyboard Failsafe
@@ -12226,7 +12265,10 @@
         function autoGenerate(level, sharingan = false, isRelayStart = false, isGhostStart = false, isVeil = false) {
             isGauntletMode = false;
             isSharinganMode = sharingan;
-            document.getElementById('loading-overlay').style.display = 'flex';
+            const _lo = document.getElementById('loading-overlay');
+            if (_lo) { _lo.classList.remove('hide'); _lo.style.opacity = ''; _lo.style.display = 'flex'; }
+            const _lm = document.getElementById('splash-msg');
+            if (_lm) { _lm.innerText = "CALCULATING TACTICAL PARAMETERS..."; _lm.style.color = ''; }
 
             setTimeout(() => {
                 let allSeries = [...new Set(rDB.map(c => c["series"]).filter(s => s))];
