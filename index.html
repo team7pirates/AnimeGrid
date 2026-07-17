@@ -722,6 +722,9 @@
         .auth-input { width: 100%; padding: 13px 14px; margin-bottom: 10px; border-radius: 10px; border: 1.5px solid rgba(120,140,190,0.25); background: rgba(5,7,14,0.6); color: #fff; font-size: 0.95rem; outline: none; transition: 0.16s; }
         .auth-input:focus { border-color: #22e0ff; box-shadow: 0 0 0 3px rgba(34,224,255,0.12); }
         .auth-err { color: #ff5e7a; font-size: 0.82rem; min-height: 18px; margin-bottom: 6px; }
+        .auth-forgot { text-align: right; margin: -4px 0 10px; }
+        .auth-forgot a { color: #8792ad; font-size: 0.8rem; cursor: pointer; }
+        .auth-forgot a:hover { color: #22e0ff; text-decoration: underline; }
         .auth-primary { width: 100%; padding: 14px; border-radius: 11px; border: none; cursor: pointer; font-weight: 900; font-size: 1rem; letter-spacing: 0.05em; color: #03121a; background: linear-gradient(90deg, #22e0ff, #12a6d9); box-shadow: 0 10px 28px rgba(34,224,255,0.28); transition: 0.16s; }
         .auth-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 38px rgba(34,224,255,0.42); }
         .auth-primary:disabled { opacity: 0.6; cursor: default; transform: none; }
@@ -7529,6 +7532,7 @@
 
                     <input class="auth-input" id="auth-email" type="email" placeholder="Email" autocomplete="email">
                     <input class="auth-input" id="auth-pass" type="password" placeholder="Password" autocomplete="current-password">
+                    <div class="auth-forgot"><a onclick="authForgotPassword()" id="auth-forgot-link">Forgot password?</a></div>
                     <div class="auth-err" id="auth-err"></div>
 
                     <button class="auth-primary" id="auth-primary-btn" onclick="authEmailSubmit()">SIGN IN</button>
@@ -10389,6 +10393,11 @@
                 const { data } = await sb.auth.getSession();
                 applyAuthUser(data && data.session ? data.session.user : null);
             } catch (e) { applyAuthUser(null); }
+            // Enter key submits the email/password form
+            ['auth-email', 'auth-pass'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); authEmailSubmit(); } });
+            });
         }
 
         function openAuth() {
@@ -10437,12 +10446,25 @@
             }
         }
 
+        // Turn Supabase's raw auth errors into friendlier messages.
+        function authFriendlyError(e) {
+            const m = ((e && e.message) || '').toLowerCase();
+            if (m.includes('invalid login')) return "That email or password isn't right.";
+            if (m.includes('already registered') || m.includes('already been registered')) return "That email already has an account — try signing in.";
+            if (m.includes('email not confirmed')) return "Please confirm your email first (check your inbox).";
+            if (m.includes('password should be')) return "Password must be at least 6 characters.";
+            if (m.includes('unable to validate email') || m.includes('invalid email')) return "That doesn't look like a valid email.";
+            if (m.includes('rate limit') || m.includes('too many')) return "Too many attempts — wait a moment and try again.";
+            if (m.includes('network') || m.includes('fetch')) return "Connection problem — check your internet and retry.";
+            return (e && e.message) ? e.message : 'Something went wrong. Try again.';
+        }
+
         async function authEmailSubmit() {
             const email = (document.getElementById('auth-email').value || '').trim();
             const pass = document.getElementById('auth-pass').value || '';
             const err = document.getElementById('auth-err');
             const btn = document.getElementById('auth-primary-btn');
-            err.textContent = '';
+            err.textContent = ''; err.style.color = '#ff5e7a';
             if (!email || !pass) { err.textContent = 'Enter an email and password.'; return; }
             if (authMode === 'signup' && pass.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return; }
             btn.disabled = true; btn.textContent = 'PLEASE WAIT…';
@@ -10453,7 +10475,7 @@
                     if (res.error) throw res.error;
                     if (res.data && res.data.user && !res.data.session) {
                         err.style.color = '#00e676';
-                        err.textContent = '✓ Check your email to confirm your account, then sign in.';
+                        err.textContent = '✓ Account created! Check your email to confirm, then sign in.';
                         authMode = 'signin';
                         btn.disabled = false; btn.textContent = 'SIGN IN';
                         return;
@@ -10462,15 +10484,31 @@
                     res = await sb.auth.signInWithPassword({ email, password: pass });
                     if (res.error) throw res.error;
                 }
-                // success
                 applyAuthUser(res.data.user);
                 closeAuth();
             } catch (e) {
                 err.style.color = '#ff5e7a';
-                err.textContent = (e && e.message) ? e.message : 'Sign-in failed. Check your details.';
+                err.textContent = authFriendlyError(e);
             }
             btn.disabled = false; btn.textContent = authMode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT';
         }
+
+        // Email a password-reset link.
+        async function authForgotPassword() {
+            const email = (document.getElementById('auth-email').value || '').trim();
+            const err = document.getElementById('auth-err');
+            err.style.color = '#ff5e7a';
+            if (!email) { err.textContent = 'Enter your email above first, then tap "Forgot password?"'; return; }
+            try {
+                const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href.split('#')[0] });
+                if (error) throw error;
+                err.style.color = '#00e676';
+                err.textContent = '✓ Reset link sent — check your email.';
+            } catch (e) {
+                err.textContent = authFriendlyError(e);
+            }
+        }
+        window.authForgotPassword = authForgotPassword;
 
         function authLogoutPrompt() {
             if (window.T7P_USER) { openAccount(); }
@@ -10494,6 +10532,36 @@
             applyAuthUser(null);
         }
         window.openAccount = openAccount; window.closeAccount = closeAccount;
+
+        /* In the Android app, Google login returns via a deep link
+           (com.team7pirates.arcade://login-callback#access_token=...). The Capacitor
+           App plugin catches that URL; we pull the tokens out and hand them to Supabase
+           so the session is established INSIDE the app. No-op on the website. */
+        (function initAppDeepLink() {
+            try {
+                if (!(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App)) return;
+                const App = window.Capacitor.Plugins.App;
+                App.addListener('appUrlOpen', async function (data) {
+                    const url = (data && data.url) || '';
+                    if (url.indexOf('login-callback') === -1) return;
+                    try {
+                        // tokens come back in the URL fragment (#access_token=...&refresh_token=...)
+                        const frag = url.split('#')[1] || '';
+                        const params = new URLSearchParams(frag);
+                        const access_token = params.get('access_token');
+                        const refresh_token = params.get('refresh_token');
+                        if (access_token && refresh_token) {
+                            await sb.auth.setSession({ access_token, refresh_token });
+                            const { data: sess } = await sb.auth.getSession();
+                            applyAuthUser(sess && sess.session ? sess.session.user : null);
+                        }
+                        // close the in-app browser tab if one is open
+                        if (window.Capacitor.Plugins.Browser) { try { await window.Capacitor.Plugins.Browser.close(); } catch (e) { } }
+                        closeAuth();
+                    } catch (e) { console.log('deep-link login error', e); }
+                });
+            } catch (e) { }
+        })();
         window.openAuth = openAuth; window.closeAuth = closeAuth;
 
         /* One place all leaderboard saves go through. Stamps the logged-in user's id
