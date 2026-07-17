@@ -748,6 +748,16 @@
         .acct-logout:hover { background: rgba(255, 94, 122, 0.18); box-shadow: 0 0 20px rgba(255, 94, 122, 0.25); }
         .acct-cancel { display: block; margin-top: 16px; color: #8792ad; cursor: pointer; font-size: 0.9rem; }
         .acct-cancel:hover { color: #fff; }
+        /* return-to-app screen (shown in browser after Google login when launched from the app) */
+        #return-app-screen { position: fixed; inset: 0; z-index: 2000000; background: #05060d; display: none; align-items: center; justify-content: center; padding: 24px; font-family: 'Segoe UI', system-ui, Arial, sans-serif; }
+        #return-app-screen .rta-box { max-width: 380px; width: 100%; text-align: center; background: linear-gradient(165deg, #101627, #0a0e1a); border: 1.5px solid rgba(0, 230, 118, 0.45); border-radius: 22px; padding: 40px 28px; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7); }
+        .rta-check { font-size: 3rem; margin-bottom: 14px; }
+        .rta-title { font-size: 1.6rem; font-weight: 900; letter-spacing: 1px; color: #fff; margin-bottom: 10px; }
+        .rta-sub { color: #8792ad; font-size: 0.95rem; line-height: 1.5; margin-bottom: 26px; }
+        .rta-btn { width: 100%; padding: 17px; border-radius: 13px; border: none; cursor: pointer; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.05em; color: #04120a; background: linear-gradient(90deg, #00e676, #00c853); box-shadow: 0 12px 34px rgba(0, 230, 118, 0.35); transition: 0.16s; }
+        .rta-btn:hover { transform: translateY(-2px); box-shadow: 0 18px 46px rgba(0, 230, 118, 0.5); }
+        .rta-alt { display: block; margin-top: 18px; color: #8792ad; cursor: pointer; font-size: 0.9rem; }
+        .rta-alt:hover { color: #fff; text-decoration: underline; }
         #app-dl-overlay { position: fixed; inset: 0; z-index: 1000200; background: rgba(3, 5, 12, 0.9); backdrop-filter: blur(5px); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
         .appdl-box { position: relative; max-width: 460px; width: 100%; background: linear-gradient(165deg, #101627, #0a0e1a); border: 1.5px solid rgba(0, 230, 118, 0.45); border-radius: 20px; padding: 32px 26px 26px; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.7); color: #e7ecf7; font-family: 'Segoe UI', system-ui, Arial, sans-serif; }
         .appdl-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #8792ad; font-size: 1.3rem; cursor: pointer; line-height: 1; }
@@ -10389,15 +10399,60 @@
         });
 
         async function initAuth() {
+            // If we just came back from Google (tokens/code in the URL), Supabase's client
+            // picks them up automatically. Detect that and, if we're in a plain browser
+            // (not the app), show a "Return to App" screen so people can hop back logged in.
+            const hadAuthReturn = /[#&?](access_token|code)=/.test(window.location.href);
             try {
                 const { data } = await sb.auth.getSession();
                 applyAuthUser(data && data.session ? data.session.user : null);
+                if (hadAuthReturn && data && data.session && !isNativeApp() && wasLaunchedForAppLogin()) {
+                    showReturnToApp();
+                }
             } catch (e) { applyAuthUser(null); }
             // Enter key submits the email/password form
             ['auth-email', 'auth-pass'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); authEmailSubmit(); } });
             });
+        }
+
+        // We tag the login URL with ?fromapp=1 when the app kicks off Google login, so the
+        // browser knows to offer "Return to App" afterward (Google strips custom params, so
+        // we also stash a flag in localStorage as a backup).
+        function wasLaunchedForAppLogin() {
+            try {
+                if (/[?&]fromapp=1/.test(window.location.href)) return true;
+                if (localStorage.getItem('t7p_login_from_app') === '1') return true;
+            } catch (e) { }
+            return false;
+        }
+
+        function showReturnToApp() {
+            try { localStorage.removeItem('t7p_login_from_app'); } catch (e) { }
+            let scr = document.getElementById('return-app-screen');
+            if (!scr) {
+                scr = document.createElement('div');
+                scr.id = 'return-app-screen';
+                scr.innerHTML =
+                    '<div class="rta-box">' +
+                    '<div class="rta-check">✅</div>' +
+                    '<div class="rta-title">YOU\'RE LOGGED IN</div>' +
+                    '<div class="rta-sub">Tap below to jump back into the app — you\'ll be signed in and ready to play.</div>' +
+                    '<button class="rta-btn" id="rta-btn">▶ RETURN TO T7P ARCADE</button>' +
+                    '<a class="rta-alt" id="rta-web">Keep playing here in the browser instead</a>' +
+                    '</div>';
+                document.body.appendChild(scr);
+                document.getElementById('rta-btn').onclick = function () {
+                    // Reopen the app via its custom scheme. If the app is installed, Android
+                    // hands control back to it; the app re-checks its session on resume.
+                    window.location.href = 'com.team7pirates.arcade://login-done';
+                    // Fallback: if nothing happens in ~2s, they may not have the app — just hide.
+                    setTimeout(function () { scr.style.display = 'none'; }, 2500);
+                };
+                document.getElementById('rta-web').onclick = function () { scr.style.display = 'none'; };
+            }
+            scr.style.display = 'flex';
         }
 
         function openAuth() {
@@ -10431,18 +10486,32 @@
         async function authGoogle() {
             const err = document.getElementById('auth-err'); if (err) err.textContent = '';
             try {
-                // In the app, send the OAuth return to the app's own origin so it comes
-                // back INTO the app instead of opening the website in a browser.
-                const returnTo = isNativeApp()
-                    ? 'com.team7pirates.arcade://login-callback'
-                    : window.location.href.split('#')[0];
-                const opts = { provider: 'google', options: { redirectTo: returnTo } };
-                // In-app: skip the auto browser redirect so we can open it in a controlled tab.
-                if (isNativeApp()) opts.options.skipBrowserRedirect = false;
-                await sb.auth.signInWithOAuth(opts);
-                // browser redirects to Google; on return, onAuthStateChange fires.
+                if (isNativeApp()) {
+                    // APP FLOW: open Google login in the system browser. Afterward the browser
+                    // page shows a "Return to App" button (handled by showReturnToApp on the web side).
+                    try { localStorage.setItem('t7p_login_from_app', '1'); } catch (e) { }
+                    const returnUrl = 'https://team7pirates.github.io/AnimeGrid/?fromapp=1';
+                    const { data, error } = await sb.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: { redirectTo: returnUrl, skipBrowserRedirect: true }
+                    });
+                    if (error) throw error;
+                    const authUrl = data && data.url;
+                    if (!authUrl) throw new Error('No auth URL');
+                    const Browser = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
+                    if (Browser) { await Browser.open({ url: authUrl }); }
+                    else { window.open(authUrl, '_blank'); }
+                } else {
+                    // WEBSITE FLOW: normal redirect in the same tab.
+                    const { error } = await sb.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: { redirectTo: window.location.href.split('#')[0] }
+                    });
+                    if (error) throw error;
+                }
             } catch (e) {
                 if (err) err.textContent = 'Google sign-in unavailable. Try email instead.';
+                console.log('google auth error', e);
             }
         }
 
@@ -10541,25 +10610,39 @@
             try {
                 if (!(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App)) return;
                 const App = window.Capacitor.Plugins.App;
+
+                // Re-sync the session whenever the app is reopened or brought back to the
+                // foreground — this catches the case where the user logged in via the browser
+                // and tapped "Return to App".
+                async function resyncSession() {
+                    try {
+                        const { data } = await sb.auth.getSession();
+                        if (data && data.session) { applyAuthUser(data.session.user); closeAuth(); }
+                    } catch (e) { }
+                    if (window.Capacitor.Plugins.Browser) { try { await window.Capacitor.Plugins.Browser.close(); } catch (e) { } }
+                }
+
                 App.addListener('appUrlOpen', async function (data) {
                     const url = (data && data.url) || '';
-                    if (url.indexOf('login-callback') === -1) return;
+                    if (url.indexOf('login-callback') === -1 && url.indexOf('login-done') === -1) return;
                     try {
-                        // tokens come back in the URL fragment (#access_token=...&refresh_token=...)
-                        const frag = url.split('#')[1] || '';
-                        const params = new URLSearchParams(frag);
-                        const access_token = params.get('access_token');
-                        const refresh_token = params.get('refresh_token');
-                        if (access_token && refresh_token) {
-                            await sb.auth.setSession({ access_token, refresh_token });
-                            const { data: sess } = await sb.auth.getSession();
-                            applyAuthUser(sess && sess.session ? sess.session.user : null);
-                        }
-                        // close the in-app browser tab if one is open
-                        if (window.Capacitor.Plugins.Browser) { try { await window.Capacitor.Plugins.Browser.close(); } catch (e) { } }
-                        closeAuth();
-                    } catch (e) { console.log('deep-link login error', e); }
+                        // If Supabase handed tokens/code straight to the app, use them…
+                        const hash = url.split('#')[1] || '';
+                        const query = (url.split('?')[1] || '').split('#')[0];
+                        const hp = new URLSearchParams(hash);
+                        const qp = new URLSearchParams(query);
+                        const access_token = hp.get('access_token');
+                        const refresh_token = hp.get('refresh_token');
+                        const code = qp.get('code') || hp.get('code');
+                        if (access_token && refresh_token) { await sb.auth.setSession({ access_token, refresh_token }); }
+                        else if (code) { await sb.auth.exchangeCodeForSession(code); }
+                    } catch (e) { console.log('deep-link token error', e); }
+                    // …then (or otherwise) just re-read whatever session now exists.
+                    resyncSession();
                 });
+
+                // Belt-and-suspenders: also re-check when the app resumes from background.
+                App.addListener('resume', resyncSession);
             } catch (e) { }
         })();
         window.openAuth = openAuth; window.closeAuth = closeAuth;
