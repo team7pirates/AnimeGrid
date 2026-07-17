@@ -10447,6 +10447,25 @@
         }
         window.openAuth = openAuth; window.closeAuth = closeAuth;
 
+        /* One place all leaderboard saves go through. Stamps the logged-in user's id
+           (required now that RLS enforces auth.uid() = user_id) and silently skips the
+           save for guests — so guest play still works, it just doesn't post scores. */
+        async function saveScore(row) {
+            const u = window.T7P_USER;
+            if (!u) { return { skipped: true }; }   // guest — don't attempt (RLS would reject anyway)
+            try {
+                const payload = Object.assign({}, row, { user_id: u.id });
+                if (!payload.name) payload.name = authDisplayName(u);
+                const { error } = await sb.from('scores').insert(payload);
+                if (error) throw error;
+                return { ok: true };
+            } catch (e) {
+                console.log('score save failed:', e && e.message);
+                return { error: e };
+            }
+        }
+        window.saveScore = saveScore;
+
         // GHOST DUEL VARIABLES
         let currentOpponentName = "UNKNOWN";
         // T7P TOWER VARIABLES
@@ -13354,14 +13373,14 @@
             localStorage.setItem('team7_lb', JSON.stringify(lb.slice(0, 10)));
 
             try {
-                const { error } = await sb.from('scores').insert({
+                const _r = await saveScore({
                     name: finalName,
                     mission: currentMissionName,
                     score: currentScore,
                     time_str: finalTimeString,
                     raw_time: (Date.now() - startTime)
                 });
-                if (error) throw error;
+                if (_r && _r.error) throw _r.error;
                 statusText.innerText = `Data Synced.`; statusText.style.color = "#00ff88"; btn.innerText = "COMPLETE";
             } catch (e) {
                 statusText.innerText = "Global Sync Failed. Saved Locally."; statusText.style.color = "#ff4d4d"; btn.innerText = "RETRY"; btn.disabled = false;
@@ -15056,7 +15075,7 @@
 
             // Sync to server
             try {
-                await sb.from('scores').insert({
+                await saveScore({
                     name,
                     mission: `TOWER — FLOOR ${floorsCleared}/10`,
                     score: floorsCleared * 100,
@@ -15966,7 +15985,7 @@
             };
 
             try {
-                await sb.from('scores').insert({
+                await saveScore({
                     name,
                     mission: `SURVIVAL — FLOOR ${survivalFloor}`,
                     score: survivalFloor * 100,
@@ -18711,7 +18730,7 @@
                 const roster = G.slots.map((s, i) => ({ op: s.c.operative, series: s.c.series, img: gmImg(s.c), axis: AXES[i] }));
                 if (G.rookie) roster.push({ op: G.rookie.c.operative, series: G.rookie.c.series, img: gmImg(G.rookie.c), rookie: true });
                 try { await sb.from('hall_of_fame_squads').insert({ codename: nm, score: rating, roster }); } catch (e) { console.log('HoF offline', e); }
-                try { await sb.from('scores').insert({ name: nm, mission: 'ANIME GM', score: 600 + rating, time_str: 'CHAMPION', raw_time: Date.now() }); } catch (e) { }
+                try { await saveScore({ name: nm, mission: 'ANIME GM', score: 600 + rating, time_str: 'CHAMPION', raw_time: Date.now() }); } catch (e) { }
                 try { window.parent.postMessage({ type: 'SCORE_TRANSMISSION', score: 600 + rating, mission: 'ANIME GM', time: 'CHAMPION' }, '*'); } catch (e) { }
                 try { awardBadge('ELITE 8 CHAMPION'); } catch (e) { }
                 if (G.beatGhost || G.beatGiant) {
@@ -19570,7 +19589,7 @@
                 localStorage.setItem('team7_codename', nm);
                 syncPersonalBest('TIER_SPLASH_STREAK', tts.bestStreak);
                 btn.disabled = true; btn.innerText = 'TRANSMITTING...';
-                try { await sb.from('scores').insert({ name: nm, mission: 'TIER SPLASH', score: tts.score, time_str: 'ROUND ' + tts.round, raw_time: Date.now() }); } catch (e) { console.log('TTS sync offline', e); }
+                try { await saveScore({ name: nm, mission: 'TIER SPLASH', score: tts.score, time_str: 'ROUND ' + tts.round, raw_time: Date.now() }); } catch (e) { console.log('TTS sync offline', e); }
                 try { window.parent.postMessage({ type: 'SCORE_TRANSMISSION', score: tts.score, mission: 'TIER SPLASH', time: 'ROUND ' + tts.round }, '*'); } catch (e) { }
                 btn.innerText = 'TRANSMITTED ✓';
             }
@@ -19799,7 +19818,7 @@
                     localStorage.setItem('team7_codename', nm);
                     this.disabled = true; this.innerText = 'TRANSMITTING...';
                     const score = sim.w * 100 + sim.teamRating;
-                    try { await sb.from('scores').insert({ name: nm, mission: 'GOATED', score, time_str: rank, raw_time: Date.now() }); } catch (e) { console.log('GOATED offline', e); }
+                    try { await saveScore({ name: nm, mission: 'GOATED', score, time_str: rank, raw_time: Date.now() }); } catch (e) { console.log('GOATED offline', e); }
                     try { window.parent.postMessage({ type: 'SCORE_TRANSMISSION', score, mission: 'GOATED', time: rank }, '*'); } catch (e) { }
                     this.innerText = 'TRANSMITTED ✓';
                 };
@@ -20736,7 +20755,7 @@
                 document.getElementById('mg-transmit').onclick = (e) => {
                     const nm = (localStorage.getItem('team7_codename') || 'GHOST').toUpperCase();
                     const _sb = (typeof supa === 'function') ? supa() : null;
-                    try { if (_sb) _sb.from('scores').insert({ name: nm, mission: 'FORBIDDEN FUSION', score: reached, time_str: 'FLOOR ' + reached, raw_time: Date.now() }); } catch (er) { }
+                    try { saveScore({ name: nm, mission: 'FORBIDDEN FUSION', score: reached, time_str: 'FLOOR ' + reached, raw_time: Date.now() }); } catch (er) { }
                     try { window.parent.postMessage({ type: 'SCORE_TRANSMISSION', score: reached, mission: 'FORBIDDEN FUSION', time: 'FLOOR ' + reached }, '*'); } catch (er) { }
                     e.target.textContent = '✓ TRANSMITTED · FLOOR ' + reached; e.target.disabled = true; e.target.style.opacity = '.7';
                 };
